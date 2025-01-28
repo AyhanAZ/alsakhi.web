@@ -1375,10 +1375,13 @@ th {
     Save Table 2
 </button>
 
+
 <!-- New Load From Firestore Button -->
 <button id="load-from-firestore-button" title="Load From Firestore">
     📂
 </button>
+<button id="enable-autosave-button" style="margin: 10px;">Enable AS</button>
+
 
 <!-- Firestore Tables Popup -->
 <!-- Firestore Tables Popup -->
@@ -1409,6 +1412,7 @@ th {
         <button id="close-saved-files" class="close-button">Close</button>
     </div>
 </div>
+
 
 
     <!-- Popup -->
@@ -1609,7 +1613,11 @@ th {
         </div>
     </div>
     
-       
+       <!-- Autosave Status -->
+       <div id="autosave-status" style="display: none; text-align: center; margin-top: 10px; color: green; font-size: 14px;">
+        Saving changes...
+      </div>
+      
     
     <script>
         let activeElement;
@@ -2445,68 +2453,483 @@ function calculateTotals() {
     
     
     // Auto-Login State Handling
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("account-button").textContent = `👤 ${user.email}`;
-        document.getElementById("signin-btn").style.display = "none";
-        document.getElementById("signup-btn").style.display = "none";
-        document.getElementById("signout-btn").style.display = "block";
+   // Automatically check login status on page load
+   onAuthStateChanged(auth, async (user) => {
+  const loginPopupOverlay = document.getElementById("login-popup-overlay");
+
+
+  if (user) {
+    // User is authenticated
+    document.getElementById("account-button").textContent = `👤 ${user.email}`;
+    document.getElementById("signin-btn").style.display = "none";
+    document.getElementById("signup-btn").style.display = "none";
+    document.getElementById("signout-btn").style.display = "block";
+
+
+    // Explicitly hide the login popup
+    loginPopupOverlay.style.display = "none";
+
+
+    // Automatically load the latest saved table
+    try {
+      const tablesSnapshot = await getDocs(collection(db, `users/${user.uid}/tables`));
+
+
+      if (!tablesSnapshot.empty) {
+        // Find the latest saved table by timestamp
+        let latestTable = null;
+        tablesSnapshot.forEach((doc) => {
+          const tableData = doc.data();
+          if (!latestTable || new Date(tableData.timestamp) > new Date(latestTable.timestamp)) {
+            latestTable = { id: doc.id, ...tableData };
+          }
+        });
+
+
+        // Load the latest table
+        if (latestTable) {
+          alert(`Automatically loading the latest save for agent: ${latestTable.agentName}`);
+          loadTableFromFirestore(latestTable.id);
+        }
       } else {
-        document.getElementById("account-button").textContent = "👤 Account";
-        document.getElementById("signin-btn").style.display = "block";
-        document.getElementById("signup-btn").style.display = "block";
-        document.getElementById("signout-btn").style.display = "none";
+        console.log("No saved tables found for this user.");
       }
+    } catch (error) {
+      console.error("Error fetching tables:", error);
+    }
+  } else {
+    // User is not authenticated
+    document.getElementById("account-button").textContent = "👤 Account";
+    document.getElementById("signin-btn").style.display = "block";
+    document.getElementById("signup-btn").style.display = "block";
+    document.getElementById("signout-btn").style.display = "none";
+
+
+    // Show the login popup
+    loginPopupOverlay.style.display = "block";
+  }
+});
+document.addEventListener("keydown", (event) => {
+  // Check if the "Shift" key is pressed
+  if (event.key === "Shift") {
+    event.preventDefault(); // Prevent any default browser behavior for the Shift key
+
+
+    // Simulate a click on the "Save Table" button
+    const saveTableButton = document.getElementById("save-table-2-button"); // Replace with your Save Table button ID
+    if (saveTableButton) {
+      saveTableButton.click();
+    }
+  }
+});
+
+
+function enableCellEditing() {
+  const table = document.querySelector(".resizable-table");
+  const cells = table.querySelectorAll("td, th"); // Select all table cells, including headers
+
+
+  // Enable editing on touch or click
+  cells.forEach((cell) => {
+    cell.contentEditable = true; // Make all cells editable
+    cell.addEventListener("click", () => {
+      cell.focus(); // Focus the clicked cell for editing
     });
-    
-    
-    // Save Table to Firestore
-    saveToFirestoreButton.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Sign in to save tables to Firestore.");
-        return;
-      }
-    
-    
+  });
+
+
+  // Enable keyboard navigation for editing
+  table.addEventListener("keydown", (event) => {
+    const activeCell = document.activeElement;
+
+
+    // Ensure the focused element is a cell
+    if (!activeCell || !activeCell.matches("td, th")) {
+      return;
+    }
+
+
+    const row = activeCell.parentElement;
+    const columnIndex = Array.from(row.children).indexOf(activeCell);
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+
+    switch (event.key) {
+      case "ArrowUp": // Navigate to the cell above
+        event.preventDefault();
+        const previousRow = rows[rows.indexOf(row) - 1];
+        if (previousRow) {
+          const cellAbove = previousRow.children[columnIndex];
+          if (cellAbove) cellAbove.focus();
+        }
+        break;
+
+
+      case "ArrowDown": // Navigate to the cell below
+        event.preventDefault();
+        const nextRow = rows[rows.indexOf(row) + 1];
+        if (nextRow) {
+          const cellBelow = nextRow.children[columnIndex];
+          if (cellBelow) cellBelow.focus();
+        }
+        break;
+
+
+      case "ArrowLeft": // Navigate to the cell to the left
+        event.preventDefault();
+        const previousCell = activeCell.previousElementSibling;
+        if (previousCell) previousCell.focus();
+        break;
+
+
+      case "ArrowRight": // Navigate to the cell to the right
+        event.preventDefault();
+        const nextCell = activeCell.nextElementSibling;
+        if (nextCell) nextCell.focus();
+        break;
+
+
+      default:
+        // Allow normal behavior for other keys
+        break;
+    }
+  });
+}
+
+
+// Call this function after loading or saving a table to ensure the feature is applied
+enableCellEditing();
+
+
+
+
+async function loadAutosavedTable(agentName) {
+  const user = auth.currentUser;
+
+
+  if (!user || agentName === "Select Agent") {
+    console.error("Cannot load table: no user is logged in or no agent is selected.");
+    return;
+  }
+
+
+  try {
+    const tableDoc = await getDoc(doc(db, `users/${user.uid}/tables`, agentName));
+    if (tableDoc.exists()) {
+      const { headers, rows, totalRow } = tableDoc.data();
       const table = document.querySelector(".resizable-table");
-      const headers = Array.from(table.querySelectorAll("thead th")).map((th) => th.textContent);
-    
-    
-      // Flatten rows to Firestore-compatible format
-      const rows = Array.from(table.querySelectorAll("tbody tr")).map((row) => {
-        const rowData = {};
-        Array.from(row.cells).forEach((cell, index) => {
-          rowData[headers[index] || `Column${index + 1}`] = {
-            content: cell.textContent,
-            fontSize: cell.style.fontSize || "",
-            fontStyle: cell.style.fontStyle || "",
-            width: cell.style.width || "",
-          };
-        });
-        return rowData;
+      const tableBody = table.querySelector("tbody");
+      const tableHead = table.querySelector("thead tr");
+
+
+      // Clear existing table rows and headers
+      tableBody.innerHTML = "";
+      tableHead.innerHTML = "";
+
+
+      // Recreate headers
+      headers.forEach((header) => {
+        const newHeaderCell = document.createElement("th");
+        newHeaderCell.textContent = header.name;
+        newHeaderCell.style.width = header.width || "auto";
+        tableHead.appendChild(newHeaderCell);
       });
-    
-    
-      const agentName = document.getElementById("agent-selector").textContent.trim();
-      if (agentName === "Select Agent") {
-        alert("Please select an agent before saving.");
-        return;
-      }
-    
-    
-      try {
-        await setDoc(doc(db, `users/${user.uid}/tables`, agentName), {
-          agentName,
-          headers,
-          rows,
-          timestamp: new Date().toISOString(),
+
+      
+
+      // Recreate rows
+      rows.forEach((rowData) => {
+        const newRow = document.createElement("tr");
+        headers.forEach((header) => {
+          const cellData = rowData[header.name] || { content: "", fontSize: "", fontStyle: "", width: "" };
+          const newCell = document.createElement("td");
+          newCell.textContent = cellData.content;
+          newCell.style.fontSize = cellData.fontSize;
+          newCell.style.fontStyle = cellData.fontStyle;
+          newCell.style.width = cellData.width || "auto";
+          newRow.appendChild(newCell);
         });
-        alert(`Table for agent "${agentName}" saved successfully to Firestore!`);
-      } catch (error) {
-        alert("Failed to save table: " + error.message);
-      }
+        tableBody.appendChild(newRow);
+      });
+
+
+      // Update total row values
+      document.getElementById("total-debit").value = totalRow?.totalDebit || "0.00";
+      document.getElementById("total-credit").value = totalRow?.totalCredit || "0.00";
+      document.getElementById("total-balance").value = totalRow?.totalBalance || "0.00";
+
+
+      // Reapply cell editing and enable autosave
+      enableCellEditing();
+      enableAutosave(agentName);
+      console.log(`Autosaved table loaded for agent: ${agentName}`);
+    } else {
+      console.log("No autosaved table found for this agent.");
+    }
+  } catch (error) {
+    console.error("Failed to load autosaved table:", error);
+  }
+}
+
+// DOM Elements
+
+
+const agentPopup = document.getElementById("agent-popup");
+
+//agentSelector.addEventListener("click", () => {
+ // agentPopup.style.display = "block"; // Show the popup
+//});
+
+///closePopupButton.addEventListener("click", () => {
+/// agentPopup.style.display = "none"; // Hide the popup
+///});
+
+
+// Add event listeners to agent buttons
+// Call enableAutosave on agent selection
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    console.log("User is logged in:", user.email);
+
+
+    // Get the last saved agent from the agent selector
+    const agentSelector = document.getElementById("agent-selector");
+    const lastSavedAgent = agentSelector.textContent.trim();
+
+
+    if (lastSavedAgent && lastSavedAgent !== "Select Agent") {
+      console.log("Auto-loading last saved agent:", lastSavedAgent);
+
+
+      // Load the table for the auto-loaded agent
+      await loadAutosavedTable(lastSavedAgent);
+    } else {
+      console.log("No agent selected or saved to auto-load.");
+    }
+  } else {
+    console.log("No user is logged in.");
+  }
+});
+agentButtons.forEach((button) => {
+  button.addEventListener("click", async () => {
+    const selectedAgent = button.getAttribute("data-agent");
+    document.getElementById("agent-selector").textContent = selectedAgent;
+
+
+    console.log("Selected agent:", selectedAgent);
+
+
+    // Check if the selected agent has a saved table
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("No user logged in.");
+      return;
+    }
+
+
+    const agentTableDoc = doc(db, `users/${user.uid}/tables`, selectedAgent);
+    const agentTableSnap = await getDoc(agentTableDoc);
+
+
+      console.log(`No saved table for agent: ${selectedAgent}. Showing blank table.`);
+      clearTable(); // Clear the table for a new start
+
+
+    // Close the agent selection popup
+    agentPopup.style.display = "none";
+  });
+});
+
+
+
+
+    
+// Save Table to Firestore with Column Widths
+saveToFirestoreButton.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Sign in to save tables to Firestore.");
+    return;
+  }
+
+
+  const table = document.querySelector(".resizable-table");
+  const headers = Array.from(table.querySelectorAll("thead th")).map((th) => ({
+    name: th.textContent,
+    width: th.style.width || "auto", // Save the current width of each column
+  }));
+
+
+  // Collect row data for Firestore
+  const rows = Array.from(table.querySelectorAll("tbody tr")).map((row) => {
+    const rowData = {};
+    Array.from(row.cells).forEach((cell, index) => {
+      rowData[headers[index].name || `Column${index + 1}`] = {
+        content: cell.textContent,
+        fontSize: cell.style.fontSize || "",
+        fontStyle: cell.style.fontStyle || "",
+        width: cell.style.width || "",
+      };
     });
+    return rowData;
+  });
+
+
+  // Get agent name
+  const agentName = document.getElementById("agent-selector").textContent.trim();
+  if (agentName === "Select Agent") {
+    alert("Please select an agent before saving.");
+    return;
+  }
+
+
+  // Get total row values
+  const totalDebit = document.getElementById("total-debit").value || "0.00";
+  const totalCredit = document.getElementById("total-credit").value || "0.00";
+  const totalBalance = document.getElementById("total-balance").value || "0.00";
+
+
+  try {
+    // Save the table data, including total row values and column widths
+    await setDoc(doc(db, `users/${user.uid}/tables`, agentName), {
+      agentName,
+      headers, // Save headers with widths
+      rows,
+      totalRow: { totalDebit, totalCredit, totalBalance },
+      timestamp: new Date().toISOString(),
+    });
+   // alert(`Table for agent "${agentName}" saved successfully to Firestore!`);
+  } catch (error) {
+    alert("Failed to save table: " + error.message);
+  }
+});
+
+
+// Handle the "Enable Autosave" button click
+document.getElementById("enable-autosave-button").addEventListener("click", () => {
+  autosaveEnabled = !autosaveEnabled; // Toggle autosave state
+
+
+  const button = document.getElementById("enable-autosave-button");
+  if (autosaveEnabled) {
+    button.textContent = "Disable Autosave";
+    enableAutosave(); // Start tracking changes for autosave
+    alert("Autosave enabled! Changes will be saved automatically.");
+  } else {
+    button.textContent = "Enable Autosave";
+    disableAutosave(); // Stop tracking changes
+    alert("Autosave disabled.");
+  }
+});
+
+
+// Enable Autosave: Attach event listeners to track changes in the table
+function enableAutosave() {
+  const table = document.querySelector(".resizable-table");
+
+
+  // Monitor changes in table cells, rows, columns, and total row
+  table.addEventListener("input", handleAutosave); // Cell content changes
+  table.addEventListener("DOMNodeInserted", handleAutosave); // Row/column added
+  table.addEventListener("DOMNodeRemoved", handleAutosave); // Row/column removed
+
+
+  // Monitor changes in the total row inputs
+  document.getElementById("total-debit").addEventListener("input", handleAutosave);
+  document.getElementById("total-credit").addEventListener("input", handleAutosave);
+  document.getElementById("total-balance").addEventListener("input", handleAutosave);
+}
+
+
+// Disable Autosave: Remove event listeners
+function disableAutosave() {
+  const table = document.querySelector(".resizable-table");
+
+
+  // Remove listeners for table changes
+  table.removeEventListener("input", handleAutosave);
+  table.removeEventListener("DOMNodeInserted", handleAutosave);
+  table.removeEventListener("DOMNodeRemoved", handleAutosave);
+
+
+  // Remove listeners for total row changes
+  document.getElementById("total-debit").removeEventListener("input", handleAutosave);
+  document.getElementById("total-credit").removeEventListener("input", handleAutosave);
+  document.getElementById("total-balance").removeEventListener("input", handleAutosave);
+}
+
+
+// Autosave Handler: Save table to Firestore when changes are detected
+async function handleAutosave() {
+  if (autosaveEnabled) {
+    document.getElementById("enable-autosave-button").textContent = "Saving...";
+
+
+    try {
+      const saveButton = document.getElementById("save-table-2-button");
+      saveButton.click(); // Trigger your existing save logic
+    } catch (error) {
+      console.error("Autosave failed:", error);
+    } finally {
+      document.getElementById("enable-autosave-button").textContent = "Disable Autosave";
+    }
+  }
+}
+
+// Enable Autosave Logic with Resize and Calculate Support
+let autosaveEnabled = false;
+
+
+// Enable Autosave Button
+const enableAutosaveButton = document.createElement("button");
+enableAutosaveButton.textContent = "Enable Autosave";
+enableAutosaveButton.style.margin = "10px";
+document.body.appendChild(enableAutosaveButton);
+
+
+// Function to Trigger Save
+async function autosave() {
+  if (autosaveEnabled) {
+    const saveToFirestoreButton = document.getElementById("save-table-2-button");
+    if (saveToFirestoreButton) {
+      saveToFirestoreButton.click();
+    }
+  }
+}
+
+
+// Toggle Autosave on Button Click
+enableAutosaveButton.addEventListener("click", () => {
+  autosaveEnabled = !autosaveEnabled;
+  enableAutosaveButton.textContent = autosaveEnabled
+    ? "Disable Autosave"
+    : "Enable Autosave";
+  alert(
+    autosaveEnabled
+      ? "Autosave Enabled: Changes will be saved automatically."
+      : "Autosave Disabled."
+  );
+});
+
+
+// Trigger Save on Calculation
+document.getElementById("calculate-total").addEventListener("click", autosave);
+
+
+// Trigger Save on Column Resize
+document.querySelectorAll(".slider-container input[type='range']").forEach((slider) => {
+  slider.addEventListener("input", autosave);
+});
+
+
+// Optional: Ensure Any Future Resizing Sliders Are Linked
+function attachSliderAutosave() {
+  document.querySelectorAll(".slider-container input[type='range']").forEach((slider) => {
+    slider.removeEventListener("input", autosave); // Avoid duplicates
+    slider.addEventListener("input", autosave);
+  });
+}
+
     
     
     // Load Tables from Firestore
@@ -2563,53 +2986,292 @@ function calculateTotals() {
     });
     
     
-    // Load Table from Firestore
-    async function loadTableFromFirestore(docId) {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Sign in to load tables.");
-        return;
-      }
-    
-    
-      try {
-        const tableDoc = await getDoc(doc(db, `users/${user.uid}/tables`, docId));
-        if (!tableDoc.exists()) {
-          alert("Table not found.");
-          return;
+    function reapplyCellEditing() {
+  document.querySelectorAll("td").forEach((cell) => {
+    cell.addEventListener("dblclick", () => {
+      const originalContent = cell.textContent;
+
+
+      // Create input field for editing
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = originalContent;
+      input.style.width = "100%";
+
+
+      // Replace cell content with input
+      cell.textContent = "";
+      cell.appendChild(input);
+
+
+      // Save changes on blur or Enter key
+      input.addEventListener("blur", () => {
+        cell.textContent = input.value || originalContent;
+      });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          cell.textContent = input.value || originalContent;
         }
-    
-    
-        const { headers, rows } = tableDoc.data();
+      });
+
+
+      // Focus input field
+      input.focus();
+    });
+  });
+}
+function reapplyColumnResizing() {
+  const table = document.querySelector(".resizable-table");
+  const slidersContainer = document.getElementById("sliders-container");
+
+
+  // Clear previous sliders
+  slidersContainer.innerHTML = "";
+
+
+  const columns = table.querySelectorAll("thead th");
+  columns.forEach((column, index) => {
+    // Create slider container
+    const sliderContainer = document.createElement("div");
+    sliderContainer.className = "slider-container";
+
+
+    // Column label
+    const label = document.createElement("label");
+    label.textContent = `Column ${index + 1}`;
+
+
+    // Slider
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = "50";
+    slider.max = "500";
+    slider.value = parseInt(column.style.width) || column.offsetWidth;
+
+
+    // Slider value display
+    const valueDisplay = document.createElement("span");
+    valueDisplay.className = "slider-value";
+    valueDisplay.textContent = `${slider.value}px`;
+
+
+    // Update column width on slider input
+    slider.addEventListener("input", () => {
+      column.style.width = `${slider.value}px`;
+      table.querySelectorAll(`td:nth-child(${index + 1})`).forEach((cell) => {
+        cell.style.width = `${slider.value}px`;
+      });
+      valueDisplay.textContent = `${slider.value}px`;
+    });
+
+
+    // Append elements to slider container
+    sliderContainer.appendChild(label);
+    sliderContainer.appendChild(slider);
+    sliderContainer.appendChild(valueDisplay);
+
+
+    // Append slider container to sliders container
+    slidersContainer.appendChild(sliderContainer);
+  });
+}
+
+async function clearTable() {
+    const user = auth.currentUser;
+
+
+    if (!user) {
+        console.error("No user is logged in.");
+        return;
+    }
+
+
+    const agentName = document.getElementById("agent-selector").textContent.trim();
+
+
+    if (agentName === "Select Agent") {
+        console.error("No agent selected.");
+        return;
+    }
+
+
+    try {
+        // Check if the table exists in Firestore for the selected agent
+        const tableDoc = await getDoc(doc(db, `users/${user.uid}/tables`, agentName));
+        
+        if (tableDoc.exists()) {
+            console.log(`Table exists for agent: ${agentName}. Not clearing.`);
+            alert(`A table already exists for agent: ${agentName}. The table will not be cleared.`);
+            return; // Exit if a table is saved
+        }
+
+
+        // If no table exists, clear the table
         const table = document.querySelector(".resizable-table");
         const tableBody = table.querySelector("tbody");
-    
-    
-        // Clear existing table rows
+        const tableHead = table.querySelector("thead");
+
+
+        // Clear the table content
         tableBody.innerHTML = "";
-    
-    
-        // Recreate rows
-        rows.forEach((rowData) => {
-          const newRow = document.createElement("tr");
-          headers.forEach((header) => {
-            const cellData = rowData[header] || { content: "", fontSize: "", fontStyle: "", width: "" };
-            const newCell = document.createElement("td");
-            newCell.textContent = cellData.content;
-            newCell.style.fontSize = cellData.fontSize;
-            newCell.style.fontStyle = cellData.fontStyle;
-            newCell.style.width = cellData.width;
-            newRow.appendChild(newCell);
-          });
-          tableBody.appendChild(newRow);
+        tableHead.innerHTML = "";
+
+
+        // Add default headers
+        const headerRow = document.createElement("tr");
+        ["#", "مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"].forEach((headerText) => {
+            const th = document.createElement("th");
+            th.textContent = headerText;
+            headerRow.appendChild(th);
         });
-    
-    
-        alert("Table loaded successfully!");
-      } catch (error) {
-        alert("Failed to load table: " + error.message);
-      }
+        tableHead.appendChild(headerRow);
+
+
+        // Add default rows
+        for (let i = 0; i < 10; i++) {
+            const row = document.createElement("tr");
+            for (let j = 0; j < 7; j++) { // Match column count
+                const cell = document.createElement("td");
+                if (j === 0) {
+                    cell.textContent = i + 1; // Fill first column with row numbers
+                } else {
+                    cell.textContent = ""; // Other cells remain empty
+                }
+                cell.contentEditable = true; // Make cells editable
+                row.appendChild(cell);
+            }
+            tableBody.appendChild(row);
+        }
+
+
+        // Reset total values
+        document.getElementById("total-debit").value = "0.00";
+        document.getElementById("total-credit").value = "0.00";
+        document.getElementById("total-balance").value = "0.00";
+
+
+        console.log(`Table cleared for agent: ${agentName}`);
+    } catch (error) {
+        console.error("Error checking or clearing table:", error);
+        alert("Failed to clear the table due to an error.");
     }
+}
+
+
+
+    
+    // Load Table from Firestore
+  // Load Table from Firestore with Column Widths
+  async function loadTableFromFirestore(agentName) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Sign in to load tables.");
+    return;
+  }
+
+
+  try {
+    const tableDoc = await getDoc(doc(db, `users/${user.uid}/tables`, agentName));
+    const table = document.querySelector(".resizable-table");
+    const tableBody = table.querySelector("tbody");
+    const tableHead = table.querySelector("thead");
+
+
+    // Clear existing table content
+    tableBody.innerHTML = "";
+    tableHead.innerHTML = "";
+
+
+    if (tableDoc.exists()) {
+      console.log(`Loading table for agent: ${agentName}`);
+      const { headers, rows, totalRow } = tableDoc.data();
+
+
+      // Log the retrieved data for debugging
+      console.log("Retrieved Headers:", headers);
+      console.log("Retrieved Rows:", rows);
+      console.log("Retrieved Total Row:", totalRow);
+
+
+      // Validate headers
+      if (!Array.isArray(headers)) {
+        throw new Error(`Invalid headers data: Expected an array, got ${typeof headers}`);
+      }
+
+
+      // Recreate headers
+      const headerRow = document.createElement("tr");
+      headers.forEach((header) => {
+        if (typeof header.name !== "string") {
+          console.warn("Invalid header entry:", header);
+          header.name = ""; // Fallback for invalid header
+        }
+
+
+        const newHeaderCell = document.createElement("th");
+        newHeaderCell.textContent = header.name || ""; // Set header text
+        newHeaderCell.style.width = header.width || "auto"; // Apply saved width
+        headerRow.appendChild(newHeaderCell);
+      });
+      tableHead.appendChild(headerRow);
+
+
+      // Validate rows
+      if (!Array.isArray(rows)) {
+        throw new Error(`Invalid rows data: Expected an array, got ${typeof rows}`);
+      }
+
+
+      // Recreate rows
+      rows.forEach((rowData) => {
+        const newRow = document.createElement("tr");
+        headers.forEach((header) => {
+          const cellData = rowData[header.name] || { content: "", fontSize: "", fontStyle: "", width: "" };
+          const newCell = document.createElement("td");
+          newCell.textContent = cellData.content || ""; // Set cell text
+          newCell.style.fontSize = cellData.fontSize || "";
+          newCell.style.fontStyle = cellData.fontStyle || "";
+          newCell.style.width = cellData.width || "auto"; // Apply saved width
+          newRow.appendChild(newCell);
+        });
+        tableBody.appendChild(newRow);
+      });
+
+
+      // Apply total row values to the UI
+      document.getElementById("total-debit").value = totalRow?.totalDebit || "0.00";
+      document.getElementById("total-credit").value = totalRow?.totalCredit || "0.00";
+      document.getElementById("total-balance").value = totalRow?.totalBalance || "0.00";
+
+
+      alert("Table loaded successfully!");
+    } else {
+      console.log(`No saved table for agent: ${agentName}. Showing default table.`);
+      clearTable(); // Reset to default table if no save exists
+    }
+
+
+    // Update agent name in the oval
+    document.getElementById("agent-selector").textContent = agentName || "Select Agent";
+
+
+    // Reapply editing functionality to table cells
+    enableCellEditing(); // Ensure cells remain editable
+
+
+    // Reinitialize column resizing functionality
+    reapplyColumnResizing();
+  } catch (error) {
+    console.error("Failed to load table:", error);
+    alert("Failed to load table: " + error.message);
+  }
+}
+
+
+
+
+
+
     
     
     // Delete Table from Firestore
@@ -2633,6 +3295,7 @@ function calculateTotals() {
       } catch (error) {
         alert("Failed to delete table: " + error.message);
       }
+
     }
     </script>
     
