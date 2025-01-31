@@ -3237,7 +3237,7 @@ async function clearTable() {
 
         // Add default headers
         const headerRow = document.createElement("tr");
-        ["مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"].forEach((headerText) => {
+        ["", "مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"].forEach((headerText) => {
             const th = document.createElement("th");
             th.textContent = headerText;
             headerRow.appendChild(th);
@@ -3248,7 +3248,7 @@ async function clearTable() {
         // Add default rows
         for (let i = 0; i < 10; i++) {
             const row = document.createElement("tr");
-            for (let j = 0; j < 6; j++) { // Match column count
+            for (let j = 0; j < 7; j++) { // Match column count
                 const cell = document.createElement("td");
                 if (j === 0) {
                     // Fill first column with row numbers
