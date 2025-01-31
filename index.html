@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Name</title>
@@ -61,6 +63,88 @@ tr.draggable.dragging {
     border-bottom: 1px solid #ccc;
 }
 
+/* Enable Auto Save Button */
+.btn-xtr-enable-as {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #73a4ff; /* Blue color */
+  border: 1px solid #000000;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+}
+
+
+.btn-xtr-enable-as:hover {
+    transform: translateY(-3px); /* Slight lift on hover */
+    background: linear-gradient(135deg, #dd2476, #ff512f); /* Reverse gradient */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow */
+}
+
+
+.btn-xtr-enable-as:active {
+    transform: translateY(1px);
+    background: linear-gradient(135deg, #ff512f, #24dd71); /* Press-in effect */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+}
+
+
+/* Load from Firebase Button */
+.btn-xtr-load-firestore {
+    background-color: #1d8cf8; /* Solid blue */
+    color: #ffffff; /* White text */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+.btn-xtr-load-firestore:hover {
+    background-color: #0056b3; /* Darker blue */
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+    transform: scale(1.05); /* Slightly larger on hover */
+}
+
+
+.btn-xtr-load-firestore:active {
+    transform: scale(0.95); /* Slight shrink on click */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Reduced shadow */
+}
+
+
+/* Save Table Button */
+.btn-xtr-save-table {
+  background-color: #0056cc;
+  border-color: #003d99;
+
+}
+
+
+.btn-xtr-save-table:hover {
+  background-color: #003d99;
+}
+
+
+.btn-xtr-save-table:active {
+  background-color: #0084ff;
+}
+
+.resizable-table th:first-child,
+.resizable-table td:first-child {
+  display: none;
+}
 
 .saved-file-entry button {
     margin: 5px;
@@ -718,6 +802,8 @@ th {
     }
 }
 
+
+
         .total-body {
             display: flex;
             justify-content: space-around;
@@ -1316,11 +1402,15 @@ th {
     background-color:   #21e61b;
 }
 
+
+
 @media print {
     .floating-button,
     .saveer,
     .export-button,
     .highlighted,
+    .btn-xtr-enable-as,
+    .btn-xtr-save-table,
     .popup-container {
         display: none !important;
     }
@@ -1337,6 +1427,18 @@ th {
     </style>
 </head>
 <body>
+  <div class="position-fixed top-0 start-0 p-3" style="z-index: 1050;">
+    <div id="customToast" class="toast hide bg-primary text-white" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            This is a toast notification.
+        </div>
+    </div>
+</div>
+
 <!-- Login/Signup Popup -->
 <div id="login-popup-overlay">
     <div id="login-popup">
@@ -1371,23 +1473,21 @@ th {
     </div>
 
     <!-- New Save Table to Firestore Button -->
-<button id="save-table-2-button" class="saveer" title="Save Table 2">
-    Save Table 2
-</button>
+
 
 
 <!-- New Load From Firestore Button -->
-<button id="load-from-firestore-button" title="Load From Firestore">
-    📂
+<button id="load-from-firestore-button" class="floating-button" title="Saved Files">
+  💾
 </button>
-<button id="enable-autosave-button" style="margin: 10px;">Enable AS</button>
+
 
 
 <!-- Firestore Tables Popup -->
 <!-- Firestore Tables Popup -->
 <div id="firestore-popup" class="popup-container-two">
     <div class="popup-content-two">
-        <h3>Firestore Saved Tables</h3>
+        <h3>Saved Tables</h3>
         <div id="firestore-tables-list">
             <!-- Firestore saved tables will appear here -->
         </div>
@@ -1397,9 +1497,7 @@ th {
 
     
     <!-- Save Files Button -->
-<button id="show-saved-files" class="floating-button" title="Saved Files">
-    💾
-</button>
+
 
 <!-- Saved Files Popup -->
 <div id="saved-files-popup" class="popup-container">
@@ -1441,10 +1539,10 @@ th {
     </div>
     
     <!-- Main Table -->
-    <table class="resizable-table">
+    <table id="myTable" class="resizable-table">
         <thead>
             <tr class="draggable">
-                <th>#</th>
+                <th></th>
                 <th>مدين</th>
                 <th>دائن</th>
                 <th>نقل</th>
@@ -1455,16 +1553,7 @@ th {
         </thead>
         <tbody>
             <tr class="draggable">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr class="draggable">
-                <td></td>
+              <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1473,16 +1562,7 @@ th {
                 <td></td>
             </tr>
             <tr class="draggable">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr class="draggable">
-                <td></td>
+              <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1491,16 +1571,7 @@ th {
                 <td></td>
             </tr>
             <tr class="draggable">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr class="draggable">
-                <td></td>
+              <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1509,16 +1580,7 @@ th {
                 <td></td>
             </tr>
             <tr class="draggable">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr class="draggable">
-                <td></td>
+              <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1527,7 +1589,7 @@ th {
                 <td></td>
             </tr>
             <tr class="draggable">
-                <td></td>
+              <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1536,7 +1598,43 @@ th {
                 <td></td>
             </tr>
             <tr class="draggable">
+              <td></td>
                 <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="draggable">
+              <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="draggable">
+              <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="draggable">
+              <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr class="draggable">
+              <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1557,7 +1655,10 @@ th {
     <button id="remove-column-button">Remove Column</button>
     <button id="add-row-button">Add Row</button>
 <button id="remove-row-button">Remove Row</button>
-<button id="save-table-button" class="saveer">Save Table</button>
+<button id="save-table-2-button" class="btn-xtr-save-table" title="Save Table 2">
+  Save Table
+</button>
+<button id="enable-autosave-button" class="btn-xtr-enable-as">Enable AS</button>
 </div>
 
 
@@ -1620,6 +1721,17 @@ th {
       
     
     <script>
+      function showToast(message) {
+    const toastEl = document.getElementById('customToast');
+    const toastBody = document.getElementById('toastMessage');
+
+
+    toastBody.innerText = message;
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+
+
         let activeElement;
         let originalText = "";
         let originalFontSize = "";
@@ -1889,7 +2001,7 @@ document.getElementById("remove-column-button").addEventListener("click", () => 
         // Reapply features to remaining cells
         applyDynamicFeatures();
     } else {
-        alert("No columns left to remove!");
+        showToast("No columns left to remove!");
     }
 });
 applyDynamicFeatures();
@@ -1964,7 +2076,7 @@ function saveTable() {
     // Check if an agent is selected
     const agentName = document.getElementById("agent-selector").textContent.trim();
     if (agentName === "Select Agent") {
-        alert("Please select an agent before saving the table.");
+        showToast("Please select an agent before saving the table.");
         return;
     }
 
@@ -1997,7 +2109,7 @@ function saveTable() {
     loadSavedTables();
 
 
-    alert(`Table for agent "${firstName}" has been saved successfully.`);
+    showToast(`Table for agent "${firstName}" has been saved successfully.`);
 }
 
 
@@ -2036,7 +2148,7 @@ function loadSavedTables() {
 function loadTable(index) {
     const savedTables = JSON.parse(localStorage.getItem("savedTables")) || [];
     if (index < 0 || index >= savedTables.length) {
-        alert("Invalid table index. Failed to load table.");
+        showToast("Invalid table index. Failed to load table.");
         return;
     }
 
@@ -2080,7 +2192,7 @@ function loadTable(index) {
     document.getElementById("agent-selector").textContent = fullAgentName || "Select Agent";
 
 reinitializeFeatures();
-    alert("Table loaded successfully!");
+    showToast("Table loaded successfully!");
 }
 
 
@@ -2094,7 +2206,7 @@ function deleteTable(index) {
         savedTables.splice(index, 1);
         localStorage.setItem(savedTablesKey, JSON.stringify(savedTables));
         loadSavedTables(); // Refresh the list
-        alert("Table deleted successfully!");
+        showToast("Table deleted successfully!");
     } else {
         // If the user clicks "Cancel," do nothing
        
@@ -2169,7 +2281,7 @@ function removeRow() {
         // Reapply popup functionality for remaining cells
         applyPopupToNewCells();
     } else {
-        alert("No rows left to remove!");
+        showToast("No rows left to remove!");
     }
 }
 
@@ -2233,8 +2345,8 @@ document.getElementById("calculate-total").onclick = calculateTotals;
 
 
 // Show/Hide Popup
-const showSavedFilesButton = document.getElementById("show-saved-files");
-const savedFilesPopup = document.getElementById("saved-files-popup");
+const showSavedFilesButton = document.getElementById("load-from-firestore-button");
+const savedFilesPopup = document.getElementById("firestore-popup");
 const closeSavedFilesButton = document.getElementById("close-saved-files");
 
 
@@ -2264,7 +2376,7 @@ window.onload = () => {
 };
 
 // Show/Hide Login Popup
-const loginPopupOverlay = document.getElementById('login-popup-overlay');
+
 const closeLoginPopup = document.getElementById('close-login-popup');
 
 
@@ -2384,6 +2496,9 @@ function calculateTotals() {
     const signinButton = document.getElementById("signin-btn");
     const signupButton = document.getElementById("signup-btn");
     const signoutButton = document.getElementById("signout-btn");
+    const loginPopupOverlay = document.getElementById("login-popup-overlay");
+
+    const closeLoginPopupButton = document.getElementById("close-login-popup");
     const saveToFirestoreButton = document.getElementById("save-table-2-button");
     const loadFirestorePopupButton = document.getElementById("load-from-firestore-button");
     const firestorePopup = document.getElementById("firestore-popup");
@@ -2397,6 +2512,10 @@ function calculateTotals() {
       loginPopupOverlay.style.display = "block";
     });
     
+    closeLoginPopupButton.addEventListener("click", () => {
+    loginPopupOverlay.style.display = "none";  // Hide the popup
+});
+
     
     // Sign-Up Logic
     signupButton.addEventListener("click", async () => {
@@ -2405,16 +2524,16 @@ function calculateTotals() {
     
     
       if (!email || !password) {
-        alert("Please fill in both email and password.");
+        showToast("Please fill in both email and password.");
         return;
       }
     
     
       try {
         await createUserWithEmailAndPassword(auth, email, password);
-        alert("Sign-up successful!");
+        showToast("Sign-up successful!");
       } catch (error) {
-        alert("Sign-up error: " + error.message);
+        showToast("Sign-up error: " + error.message);
       }
     });
     
@@ -2426,17 +2545,17 @@ function calculateTotals() {
     
     
       if (!email || !password) {
-        alert("Please fill in both email and password.");
+        showToast("Please fill in both email and password.");
         return;
       }
     
     
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        alert("Sign-in successful!");
+        showToast("Sign-in successful!");
         document.getElementById("login-popup-overlay").style.display = "none";
       } catch (error) {
-        alert("Sign-in error: " + error.message);
+        showToast("Sign-in error: " + error.message);
       }
     });
     
@@ -2445,10 +2564,11 @@ function calculateTotals() {
     signoutButton.addEventListener("click", async () => {
       try {
         await signOut(auth);
-        alert("Sign-out successful!");
+        showToast("Sign-out successful!");
       } catch (error) {
-        alert("Sign-out error: " + error.message);
+        showToast("Sign-out error: " + error.message);
       }
+      loginPopupOverlay.style.display = "none";
     });
     
     
@@ -2460,7 +2580,7 @@ function calculateTotals() {
 
   if (user) {
     // User is authenticated
-    document.getElementById("account-button").textContent = `👤 ${user.email}`;
+    document.getElementById("account-button").textContent = `👤✔️`;
     document.getElementById("signin-btn").style.display = "none";
     document.getElementById("signup-btn").style.display = "none";
     document.getElementById("signout-btn").style.display = "block";
@@ -2488,7 +2608,7 @@ function calculateTotals() {
 
         // Load the latest table
         if (latestTable) {
-          alert(`Automatically loading the latest save for agent: ${latestTable.agentName}`);
+          //showToast(`Automatically loading the latest save for agent: ${latestTable.agentName}`);
           loadTableFromFirestore(latestTable.id);
         }
       } else {
@@ -2539,14 +2659,22 @@ function enableCellEditing() {
 
 
   // Enable keyboard navigation for editing
+  document.addEventListener("DOMContentLoaded", () => {
+  const table = document.querySelector("#myTable"); // Ensure your table has an ID
+
+
+  if (!table) {
+    console.error("Table not found!");
+    return;
+  }
+
+
   table.addEventListener("keydown", (event) => {
     const activeCell = document.activeElement;
 
 
-    // Ensure the focused element is a cell
-    if (!activeCell || !activeCell.matches("td, th")) {
-      return;
-    }
+    // Ensure the focused element is a table cell (td or th)
+    if (!activeCell || !activeCell.matches("td, th")) return;
 
 
     const row = activeCell.parentElement;
@@ -2554,46 +2682,47 @@ function enableCellEditing() {
     const rows = Array.from(table.querySelectorAll("tbody tr"));
 
 
+    let targetCell = null;
+
+
     switch (event.key) {
-      case "ArrowUp": // Navigate to the cell above
+      case "ArrowUp":
         event.preventDefault();
-        const previousRow = rows[rows.indexOf(row) - 1];
-        if (previousRow) {
-          const cellAbove = previousRow.children[columnIndex];
-          if (cellAbove) cellAbove.focus();
-        }
+        const prevRow = row.previousElementSibling;
+        if (prevRow) targetCell = prevRow.children[columnIndex];
         break;
 
 
-      case "ArrowDown": // Navigate to the cell below
+      case "ArrowDown":
         event.preventDefault();
-        const nextRow = rows[rows.indexOf(row) + 1];
-        if (nextRow) {
-          const cellBelow = nextRow.children[columnIndex];
-          if (cellBelow) cellBelow.focus();
-        }
+        const nextRow = row.nextElementSibling;
+        if (nextRow) targetCell = nextRow.children[columnIndex];
         break;
 
 
-      case "ArrowLeft": // Navigate to the cell to the left
+      case "ArrowRight":
         event.preventDefault();
-        const previousCell = activeCell.previousElementSibling;
-        if (previousCell) previousCell.focus();
+        targetCell = activeCell.previousElementSibling;
         break;
 
 
-      case "ArrowRight": // Navigate to the cell to the right
+      case "ArrowLeft":
         event.preventDefault();
-        const nextCell = activeCell.nextElementSibling;
-        if (nextCell) nextCell.focus();
-        break;
-
-
-      default:
-        // Allow normal behavior for other keys
+        targetCell = activeCell.nextElementSibling;
         break;
     }
+
+
+    if (targetCell) targetCell.focus();
   });
+
+
+  // Make all table cells focusable
+  table.querySelectorAll("td, th").forEach((cell) => {
+    cell.setAttribute("tabindex", "0");
+  });
+});
+
 }
 
 
@@ -2736,7 +2865,7 @@ agentButtons.forEach((button) => {
 
 
     // Close the agent selection popup
-    agentPopup.style.display = "none";
+    agentPopup.style.display = "none"; 
   });
 });
 
@@ -2748,7 +2877,7 @@ agentButtons.forEach((button) => {
 saveToFirestoreButton.addEventListener("click", async () => {
   const user = auth.currentUser;
   if (!user) {
-    alert("Sign in to save tables to Firestore.");
+    showToast("Sign in to save tables.");
     return;
   }
 
@@ -2778,7 +2907,7 @@ saveToFirestoreButton.addEventListener("click", async () => {
   // Get agent name
   const agentName = document.getElementById("agent-selector").textContent.trim();
   if (agentName === "Select Agent") {
-    alert("Please select an agent before saving.");
+    showToast("Please select an agent before saving.");
     return;
   }
 
@@ -2798,9 +2927,9 @@ saveToFirestoreButton.addEventListener("click", async () => {
       totalRow: { totalDebit, totalCredit, totalBalance },
       timestamp: new Date().toISOString(),
     });
-   // alert(`Table for agent "${agentName}" saved successfully to Firestore!`);
+   showToast(`Table for agent "${agentName}" saved successfully!`);
   } catch (error) {
-    alert("Failed to save table: " + error.message);
+    showToast("Failed to save table: " + error.message);
   }
 });
 
@@ -2814,11 +2943,11 @@ document.getElementById("enable-autosave-button").addEventListener("click", () =
   if (autosaveEnabled) {
     button.textContent = "Disable Autosave";
     enableAutosave(); // Start tracking changes for autosave
-    alert("Autosave enabled! Changes will be saved automatically.");
+    showToast("Autosave enabled! Changes will be saved automatically.");
   } else {
     button.textContent = "Enable Autosave";
     disableAutosave(); // Stop tracking changes
-    alert("Autosave disabled.");
+    showToast("Autosave disabled.");
   }
 });
 
@@ -2881,10 +3010,6 @@ let autosaveEnabled = false;
 
 
 // Enable Autosave Button
-const enableAutosaveButton = document.createElement("button");
-enableAutosaveButton.textContent = "Enable Autosave";
-enableAutosaveButton.style.margin = "10px";
-document.body.appendChild(enableAutosaveButton);
 
 
 // Function to Trigger Save
@@ -2899,17 +3024,7 @@ async function autosave() {
 
 
 // Toggle Autosave on Button Click
-enableAutosaveButton.addEventListener("click", () => {
-  autosaveEnabled = !autosaveEnabled;
-  enableAutosaveButton.textContent = autosaveEnabled
-    ? "Disable Autosave"
-    : "Enable Autosave";
-  alert(
-    autosaveEnabled
-      ? "Autosave Enabled: Changes will be saved automatically."
-      : "Autosave Disabled."
-  );
-});
+
 
 
 // Trigger Save on Calculation
@@ -2936,7 +3051,7 @@ function attachSliderAutosave() {
     loadFirestorePopupButton.addEventListener("click", async () => {
       const user = auth.currentUser;
       if (!user) {
-        alert("Sign in to load tables from Firestore.");
+        showToast("Sign in to load tables.");
         return;
       }
     
@@ -2975,7 +3090,7 @@ function attachSliderAutosave() {
           button.addEventListener("click", () => deleteTableFromFirestore(button.dataset.id));
         });
       } catch (error) {
-        alert("Failed to load tables: " + error.message);
+        showToast("Failed to load tables: " + error.message);
       }
     });
     
@@ -3076,6 +3191,8 @@ function reapplyColumnResizing() {
   });
 }
 
+
+
 async function clearTable() {
     const user = auth.currentUser;
 
@@ -3098,10 +3215,11 @@ async function clearTable() {
     try {
         // Check if the table exists in Firestore for the selected agent
         const tableDoc = await getDoc(doc(db, `users/${user.uid}/tables`, agentName));
-        
+
+
         if (tableDoc.exists()) {
             console.log(`Table exists for agent: ${agentName}. Not clearing.`);
-            alert(`A table already exists for agent: ${agentName}. The table will not be cleared.`);
+            //showToast(`A table already exists for agent: ${agentName}. The table will not be cleared.`);
             return; // Exit if a table is saved
         }
 
@@ -3119,7 +3237,7 @@ async function clearTable() {
 
         // Add default headers
         const headerRow = document.createElement("tr");
-        ["#", "مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"].forEach((headerText) => {
+        ["مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"].forEach((headerText) => {
             const th = document.createElement("th");
             th.textContent = headerText;
             headerRow.appendChild(th);
@@ -3130,10 +3248,11 @@ async function clearTable() {
         // Add default rows
         for (let i = 0; i < 10; i++) {
             const row = document.createElement("tr");
-            for (let j = 0; j < 7; j++) { // Match column count
+            for (let j = 0; j < 6; j++) { // Match column count
                 const cell = document.createElement("td");
                 if (j === 0) {
-                    cell.textContent = i + 1; // Fill first column with row numbers
+                    // Fill first column with row numbers
+                   // For example: 1, 2, 3, etc.
                 } else {
                     cell.textContent = ""; // Other cells remain empty
                 }
@@ -3142,6 +3261,16 @@ async function clearTable() {
             }
             tableBody.appendChild(row);
         }
+
+
+        // Set a consistent column width to avoid the first column being smaller
+        const columns = table.querySelectorAll("th, td");
+        const firstColumnWidth = columns[1].offsetWidth; // Get the width of the second column
+        columns.forEach((column, index) => {
+            if (index % 6 === 0) { // Only target first column (every 6th element)
+                column.style.width = `${firstColumnWidth}px`; // Match the width to the second column
+            }
+        });
 
 
         // Reset total values
@@ -3153,10 +3282,9 @@ async function clearTable() {
         console.log(`Table cleared for agent: ${agentName}`);
     } catch (error) {
         console.error("Error checking or clearing table:", error);
-        alert("Failed to clear the table due to an error.");
+        showToast("Failed to clear the table due to an error.");
     }
 }
-
 
 
     
@@ -3165,7 +3293,7 @@ async function clearTable() {
   async function loadTableFromFirestore(agentName) {
   const user = auth.currentUser;
   if (!user) {
-    alert("Sign in to load tables.");
+    showToast("Sign in to load tables.");
     return;
   }
 
@@ -3244,7 +3372,7 @@ async function clearTable() {
       document.getElementById("total-balance").value = totalRow?.totalBalance || "0.00";
 
 
-      alert("Table loaded successfully!");
+      //showToast("Table loaded successfully!");
     } else {
       console.log(`No saved table for agent: ${agentName}. Showing default table.`);
       clearTable(); // Reset to default table if no save exists
@@ -3263,7 +3391,7 @@ async function clearTable() {
     reapplyColumnResizing();
   } catch (error) {
     console.error("Failed to load table:", error);
-    alert("Failed to load table: " + error.message);
+    showToast("Failed to load table: " + error.message);
   }
 }
 
@@ -3278,7 +3406,7 @@ async function clearTable() {
     async function deleteTableFromFirestore(docId) {
       const user = auth.currentUser;
       if (!user) {
-        alert("Sign in to delete tables.");
+        showToast("Sign in to delete tables.");
         return;
       }
     
@@ -3290,12 +3418,16 @@ async function clearTable() {
     
       try {
         await deleteDoc(doc(db, `users/${user.uid}/tables`, docId));
-        alert("Table deleted successfully!");
+        showToast("Table deleted successfully!");
         loadFirestorePopupButton.click(); // Refresh the popup
       } catch (error) {
-        alert("Failed to delete table: " + error.message);
+        showToast("Failed to delete table: " + error.message);
       }
 
+    }
+    window.onload = () => {
+      autosaveEnabled = true;
+      enableAutosave();
     }
     </script>
     
