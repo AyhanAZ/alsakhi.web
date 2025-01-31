@@ -2293,6 +2293,9 @@ function calculateTotals() {
     let totalCredit = 0;
 
 
+    console.log("Calculate button clicked"); // Log when the button is clicked
+
+
     // Loop through each row in the table
     rows.forEach(row => {
         const debitCell = row.children[1]; // 2nd child (مدين)
@@ -2307,6 +2310,9 @@ function calculateTotals() {
         const additionalValue = parseFloat(additionalCell.textContent) || 0;
 
 
+        console.log(`Row - Debit: ${debitValue}, Credit: ${creditValue}, Additional: ${additionalValue}`); // Log each row's values
+
+
         // Calculate balance
         const totalCreditAndAdditional = creditValue + additionalValue;
         const balance = debitValue - totalCreditAndAdditional;
@@ -2319,6 +2325,9 @@ function calculateTotals() {
     });
 
 
+    console.log(`Total Debit: ${totalDebit}, Total Credit: ${totalCredit}, Total Balance: ${totalDebit - totalCredit}`); // Log final totals
+
+
     // Update totals in the Total Section
     document.getElementById("total-debit").value = totalDebit.toFixed(2);
     document.getElementById("total-credit").value = totalCredit.toFixed(2);
@@ -2326,12 +2335,13 @@ function calculateTotals() {
 }
 
 
+
 // Initialize Saved Files List on Page Load
 window.onload = loadSavedTables;
 
 
 // Add Save Button Event Listener
-document.getElementById("save-table-button").addEventListener("click", saveTable);
+//document.getElementById("save-table-button").addEventListener("click", saveTable);
 
 
 // Initialize Add/Remove Row Buttons
@@ -2408,6 +2418,10 @@ function calculateTotals() {
     let totalDebit = 0;
     let totalCredit = 0;
 
+
+    console.log("Calculate button clicked"); // Log when the button is clicked
+
+
     // Loop through each row in the table
     rows.forEach(row => {
         const debitCell = row.children[1]; // 2nd child (مدين)
@@ -2415,27 +2429,35 @@ function calculateTotals() {
         const additionalCell = row.children[3]; // 4th child (نقل)
         const balanceCell = row.children[6]; // Final child (الرصيد)
 
-        // Remove commas and parse numeric values from the cells
-        const debitValue = parseFloat(debitCell.textContent.replace(/,/g, "")) || 0;
-        const creditValue = parseFloat(creditCell.textContent.replace(/,/g, "")) || 0;
-        const additionalValue = parseFloat(additionalCell.textContent.replace(/,/g, "")) || 0;
 
-        // Calculate the balance for the row
+        // Get numeric values from the cells
+        const debitValue = parseFloat(debitCell.textContent) || 0;
+        const creditValue = parseFloat(creditCell.textContent) || 0;
+        const additionalValue = parseFloat(additionalCell.textContent) || 0;
+
+
+        console.log(`Row - Debit: ${debitValue}, Credit: ${creditValue}, Additional: ${additionalValue}`); // Log each row's values
+
+
+        // Calculate balance
         const totalCreditAndAdditional = creditValue + additionalValue;
         const balance = debitValue - totalCreditAndAdditional;
+        balanceCell.textContent = balance.toFixed(2);
 
-        // Update the balance cell with formatted value
-        balanceCell.textContent = balance.toLocaleString("en-US");
 
-        // Add to totals
+        // Update totals
         totalDebit += debitValue;
         totalCredit += totalCreditAndAdditional;
     });
 
-    // Update totals in the Total Section with formatted numbers
-    document.getElementById("total-debit").value = totalDebit.toLocaleString("en-US");
-    document.getElementById("total-credit").value = totalCredit.toLocaleString("en-US");
-    document.getElementById("total-balance").value = (totalDebit - totalCredit).toLocaleString("en-US");
+
+    console.log(`Total Debit: ${totalDebit}, Total Credit: ${totalCredit}, Total Balance: ${totalDebit - totalCredit}`); // Log final totals
+
+
+    // Update totals in the Total Section
+    document.getElementById("total-debit").value = totalDebit.toFixed(2);
+    document.getElementById("total-credit").value = totalCredit.toFixed(2);
+    document.getElementById("total-balance").value = (totalDebit - totalCredit).toFixed(2);
 }
 
 
