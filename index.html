@@ -14,17 +14,59 @@
             margin: 0;
             padding: 0;
         }
-
-        .saved-files-tab {
-    margin: 20px auto;
-    padding: 10px;
-    border: 2px solid #73a4ff;
-    border-radius: 10px;
-    background-color: #f9f9f9;
-    text-align: center;
-    width: 95%;
+/* Date Popup Styles */
+#date-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
 }
 
+
+#date-popup .popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 300px;
+}
+
+
+#date-popup h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+
+#select-day, #select-month {
+    padding: 5px;
+    font-size: 14px;
+    margin: 10px;
+}
+
+
+button {
+    padding: 10px;
+    background-color: #73a4ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 5px;
+}
+
+
+button:hover {
+    background-color: #315f80;
+}
 
 
 
@@ -41,19 +83,6 @@ tr.draggable.dragging {
     opacity: 0.5;
     background-color: #ffeb3b; /* Highlight during drag */
     
-}
-
-/* Row Dragging Style */
-.draggable.dragging {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 150, 255, 0.8);
-    z-index: 1000; /* Ensure it stays above other elements */
-}
-
-
-/* Highlight Drop Target */
-.draggable.over {
-    background-color: #ffeb3b; /* Highlight drop target */
-    transition: background-color 0.3s ease;
 }
 
 
@@ -81,7 +110,6 @@ tr.draggable.dragging {
 
 }
 
-
 .btn-xtr-enable-as:hover {
     transform: translateY(-3px); /* Slight lift on hover */
     background: linear-gradient(135deg, #dd2476, #ff512f); /* Reverse gradient */
@@ -94,35 +122,6 @@ tr.draggable.dragging {
     background: linear-gradient(135deg, #ff512f, #24dd71); /* Press-in effect */
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); /* Reduced shadow */
 }
-
-
-/* Load from Firebase Button */
-.btn-xtr-load-firestore {
-    background-color: #1d8cf8; /* Solid blue */
-    color: #ffffff; /* White text */
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 12px; /* Rounded corners */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-
-.btn-xtr-load-firestore:hover {
-    background-color: #0056b3; /* Darker blue */
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow */
-    transform: scale(1.05); /* Slightly larger on hover */
-}
-
-
-.btn-xtr-load-firestore:active {
-    transform: scale(0.95); /* Slight shrink on click */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Reduced shadow */
-}
-
 
 /* Save Table Button */
 .btn-xtr-save-table {
@@ -579,27 +578,6 @@ label {
   display: none; /* Hidden by default */
 }
 
-        
-        header img {
-            position: absolute;
-            top: -115px;
-            right: -180px;
-            width: 68%;
-            margin: 0%;
-            padding: 0%;
-            height: auto;
-            background-color: transparent;
-            object-fit: contain;
-        }
-
-        footer {
-            position: relative;
-            text-align: center;
-            font-size: 18px;
-            min-height: 100%;
-            min-width: 100%;
-        }
-
         .separator-line {
             border: none;
             border-top: 3px solid #73a4ff;
@@ -611,13 +589,6 @@ label {
             border: none;
             border-top: 3px solid #73a4ff;
             margin: 5px auto;
-            width: 95%;
-        }
-
-        .footer-line-sep {
-            border: none;
-            border-top: 5px solid #73a4ff;
-            margin: 10px auto;
             width: 95%;
         }
 
@@ -639,30 +610,21 @@ label {
     font-family: Arial, Helvetica, sans-serif;
     white-space: normal;
     overflow: hidden;
-
-
-    /* Smaller padding */
-    padding: 2px 4px; /* Tight vertical and horizontal padding */
-
-
-    /* Consistent cell height */
-    min-height: 20px; /* Minimum height */
-    height: 20px; /* Fixed height for all cells */
-
-
-    /* Adjust font size */
-    font-size: 13px; /* Slightly smaller text */
-    line-height: 1.1; /* Compact line spacing */
+    padding: 2px 4px; 
+    min-height: 20px; 
+    height: 20px; 
+    font-size: 13px;
+    line-height: 1.1;
 }
 
 th {
-    text-align: center; /* Optional: Center-align header text */
+    text-align: center; 
     border: 1px solid #6d6d6d;
-    padding: 4px 6px; /* Adjust padding for a balanced look */
-    font-size: 14px; /* Larger text size for the header */
-    line-height: 1.4; /* Slightly more line spacing for clarity */
-    background-color: #73a4ff; /* Blue header background */
-    color: white; /* White text for better contrast */
+    padding: 4px 6px;
+    font-size: 14px; 
+    line-height: 1.4;
+    background-color: #73a4ff; 
+    color: white; 
 }
 
 
@@ -670,45 +632,7 @@ th {
             background-color: #dadada;
         }
 
-        .highlighted {
-            background-color: yellow !important;
-        }
 
-        .editor-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #f9f9f9;
-            border: 2px solid #73a4ff;
-            border-radius: 10px;
-            padding: 20px;
-            z-index: 1000;
-            display: none;
-            width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .editor-popup label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .editor-popup input[type="text"], .editor-popup select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .editor-popup input[type="range"] {
-            width: 100%;
-            margin-bottom: 10px;
-        }
 
         .font-size-display {
             text-align: center;
@@ -718,30 +642,7 @@ th {
             color: #555;
         }
 
-        .editor-popup button {
-            margin-top: 10px;
-            padding: 10px;
-            border: none;
-            background-color: #73a4ff;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            width: 48%;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
 
-        .editor-popup button:hover {
-            background-color: #315f80;
-        }
-
-        .editor-popup .reset-button {
-            background-color: #e63946;
-        }
-
-        .editor-popup .reset-button:hover {
-            background-color: #a0212f;
-        }
 
         #calculate-button, #calculate-total {
             background-color: #73a4ff;
@@ -802,8 +703,6 @@ th {
     }
 }
 
-
-
         .total-body {
             display: flex;
             justify-content: space-around;
@@ -820,6 +719,8 @@ th {
             border-radius: 5px;
             font-size: 16px;
         }
+
+        
         #resizing-tool {
     background-color: #f9f9f9;
     border: 2px solid #73a4ff;
@@ -893,10 +794,14 @@ th {
 
 /* Hide Resizing Tool During Print */
 @media print {
-    #resize-columns-button{
+    #resize-columns-button,.slider-container,#resizing-tool,  .slider-container label,#resizing-tool h3, #reset-columns
+    {
         display: none !important;
     }
 }
+
+.editor-popup {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);background-color: #f9f9f9;border: 2px solid #73a4ff;border-radius: 10px;padding: 20px;z-index: 1000;display: none;width: 400px;box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
 
 .resizable-table th:first-child,
 .resizable-table td:first-child {
@@ -1127,78 +1032,6 @@ th {
     background-color: #a0212f;
 }
 
-/* Tabs Container */
-.tabs-container {
-    display: flex;
-    align-items: center;
-    margin: 20px auto;
-    padding: 5px;
-    width: 95%;
-    border-bottom: 2px solid #73a4ff;
-}
-
-
-.tab-buttons {
-    flex-grow: 1;
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-}
-
-
-.tab-button {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    background-color: #73a4ff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-
-.tab-button.active {
-    background-color: #315f80;
-    font-weight: bold;
-}
-
-
-.tab-button:hover {
-    background-color: #315f80;
-}
-
-
-.new-tab-button {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #e63946;
-    color: white;
-    cursor: pointer;
-    font-size: 20px;
-    line-height: 20px;
-    height: 35px;
-}
-
-
-.new-tab-button:hover {
-    background-color: #a0212f;
-}
-
-
-@media print {
-    .new-tab-button, .tab-buttons {
-        display: none;
-    }
-}
-
-
-#table-container {
-    margin: 20px auto;
-    width: 95%;
-}
-
-/* Floating Button */
 /* Floating Button Styles */
 .floating-button {
   position: fixed;
@@ -1345,29 +1178,6 @@ th {
 }
 
 
-/* Hide During Print */
-/* Floating Buttons Container */
-.floating-buttons-container {
-    position: fixed;
-    bottom: 20px; /* Distance from the bottom of the page */
-    right: 20px; /* Distance from the right edge of the page */
-    display: flex; /* Align buttons horizontally */
-    gap: 10px; /* Space between buttons */
-    z-index: 9999; /* Ensure buttons are on top of all content */
-}
-
-/* Search Bar */
-#search-saved-files {
-    font-size: 16px;
-    color: #333;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    width: 90%;
-    margin: 0 auto 15px;
-    display: block;
-}
-
 /* Saved Files List with Scroll Bar */
 /* Saved Files List with Scrolling */
 .saved-files-list {
@@ -1398,20 +1208,8 @@ th {
 
 /* Floating Buttons (Applies to Both Buttons) */
 
-.saveer {
-    background-color:   #21e61b;
-}
 
-
-
-@media print {
-    .floating-button,
-    .saveer,
-    .export-button,
-    .highlighted,
-    .btn-xtr-enable-as,
-    .btn-xtr-save-table,
-    .popup-container {
+@media print {.floating-button,.export-button,.highlighted,.btn-xtr-enable-as,.btn-xtr-save-table, .popup-container {
         display: none !important;
     }
 }
@@ -1495,8 +1293,7 @@ th {
     </div>
 </div>
 
-    
-    <!-- Save Files Button -->
+
 
 
 <!-- Saved Files Popup -->
@@ -1511,6 +1308,68 @@ th {
     </div>
 </div>
 
+<!-- Date Popup -->
+<!-- Date Popup -->
+<div id="date-popup" class="popup-container">
+  <div class="popup-content">
+      <h3>Select Date</h3>
+      <div>
+          <label for="select-day">Day:</label>
+          <select id="select-day">
+              <option value="01">01</option>
+              <option value="02">02</option>
+              <option value="03">03</option>
+              <option value="04">04</option>
+              <option value="05">05</option>
+              <option value="06">06</option>
+              <option value="07">07</option>
+              <option value="08">08</option>
+              <option value="09">09</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+              <option value="16">16</option>
+              <option value="17">17</option>
+              <option value="18">18</option>
+              <option value="19">19</option>
+              <option value="20">20</option>
+              <option value="21">21</option>
+              <option value="22">22</option>
+              <option value="23">23</option>
+              <option value="24">24</option>
+              <option value="25">25</option>
+              <option value="26">26</option>
+              <option value="27">27</option>
+              <option value="28">28</option>
+              <option value="29">29</option>
+              <option value="30">30</option>
+              <option value="31">31</option>
+          </select>
+      </div>
+      <div>
+          <label for="select-month">Month:</label>
+          <select id="select-month">
+              <option value="01">01 (January)</option>
+              <option value="02">02 (February)</option>
+              <option value="03">03 (March)</option>
+              <option value="04">04 (April)</option>
+              <option value="05">05 (May)</option>
+              <option value="06">06 (June)</option>
+              <option value="07">07 (July)</option>
+              <option value="08">08 (August)</option>
+              <option value="09">09 (September)</option>
+              <option value="10">10 (October)</option>
+              <option value="11">11 (November)</option>
+              <option value="12">12 (December)</option>
+          </select>
+      </div>
+      <button id="save-date">Save Date</button>
+      <button id="cancel-date">Cancel</button>
+  </div>
+</div>
 
 
     <!-- Popup -->
@@ -1651,8 +1510,8 @@ th {
 
 <!-- Add and Remove Columns Buttons -->
 <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
-    <button id="add-column-button">Add Column</button>
-    <button id="remove-column-button">Remove Column</button>
+    <button id="add-column-button" style="display: none;">Add Column</button>
+    <button id="remove-column-button" style="display: none;">Remove Column</button>
     <button id="add-row-button">Add Row</button>
 <button id="remove-row-button">Remove Row</button>
 <button id="save-table-2-button" class="btn-xtr-save-table" title="Save Table 2">
@@ -1690,7 +1549,7 @@ th {
 
 
     <!-- Popup Editor -->
-    <div class="editor-popup">
+    <div class="editor-popup" style="display: none;">
         <label for="cell-text">Edit Text:</label>
         <input type="text" id="cell-text" placeholder="Type your text here">
 
@@ -1713,13 +1572,7 @@ th {
             <button id="reset-edit" class="reset-button">Reset</button>
         </div>
     </div>
-    
-       <!-- Autosave Status -->
-       <div id="autosave-status" style="display: none; text-align: center; margin-top: 10px; color: green; font-size: 14px;">
-        Saving changes...
-      </div>
-      
-    
+
     <script>
       function showToast(message) {
     const toastEl = document.getElementById('customToast');
@@ -1730,6 +1583,71 @@ th {
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
 }
+
+let activeCell;  // To store the currently clicked cell
+
+
+// Log when the script starts
+console.log("Script Loaded and Running");
+
+
+document.querySelectorAll("td:nth-child(5)").forEach((cell, index) => {
+    console.log(`Adding event listener to cell ${index + 1}`);
+    
+    // Change to dblclick event
+    cell.addEventListener("dblclick", function() {
+        console.log("Date cell double-clicked!");
+
+
+        activeCell = cell;  // Store the clicked cell
+        const currentDate = activeCell.textContent.trim(); // Get the current date from the cell
+        console.log("Current Date in Cell: ", currentDate);
+
+
+        const [day, month] = currentDate.split('/'); // Extract day and month
+        console.log("Extracted Day: ", day, "Extracted Month: ", month);
+
+
+        // Set the day and month values in the select elements
+        document.getElementById("select-day").value = day || "01"; // Default to "01" if no day is present
+        document.getElementById("select-month").value = month || "01"; // Default to "01" if no month is present
+
+
+        // Show the popup
+        document.getElementById("date-popup").style.display = "flex"; 
+        console.log("Popup should be displayed now.");
+    });
+});
+
+
+// Save Date Button: Update the cell with the selected date
+document.getElementById("save-date").addEventListener("click", function() {
+    console.log("Save Date button clicked!");
+
+
+    const day = document.getElementById("select-day").value;
+    const month = document.getElementById("select-month").value;
+    const newDate = `${day}/${month}/2025`; // Format the new date with year 2025
+    console.log("New Date to Save: ", newDate);
+
+
+    if (activeCell) {
+        activeCell.textContent = newDate;  // Update the cell with the new date
+        console.log("Cell Updated with Date: ", newDate);
+    }
+
+
+    document.getElementById("date-popup").style.display = "none"; // Close the popup
+    console.log("Popup Closed");
+});
+
+
+// Cancel Button: Close the popup without saving
+document.getElementById("cancel-date").addEventListener("click", function() {
+    console.log("Cancel button clicked. Closing the popup without saving.");
+    document.getElementById("date-popup").style.display = "none"; // Close the popup
+});
+
 
 
         let activeElement;
@@ -1934,33 +1852,7 @@ const agentButtons = document.querySelectorAll(".agent-button");
 
 
 // Show the popup when clicking the oval text
-agentSelector.addEventListener("click", () => {
-    popupContainer.style.display = "block";
-});
 
-
-// Close the popup when clicking the "Close" button
-closePopupButton.addEventListener("click", () => {
-    popupContainer.style.display = "none";
-});
-
-
-// Close the popup when clicking outside of the popup content
-popupContainer.addEventListener("click", (e) => {
-    if (e.target === popupContainer) {
-        popupContainer.style.display = "none";
-    }
-});
-
-
-// Update the oval text and close popup when an agent is selected
-agentButtons.forEach(button => {
-    button.addEventListener("click", () => {
-        const selectedAgent = button.getAttribute("data-agent");
-        agentSelector.textContent = selectedAgent; // Update the oval text
-        popupContainer.style.display = "none"; // Hide the popup
-    });
-});
 
 
 // Add a new column to the table
@@ -2033,17 +1925,6 @@ document.getElementById("remove-row-button").addEventListener("click", () => {
 
 });
 
-// Global Variables
-
-
-
-// Save Table Functionality
-
-
-// Global Variables
-
-
-// Global Variables
 
 
 // Global Variables
@@ -2286,6 +2167,7 @@ function removeRow() {
 }
 
 
+
 // Calculate Totals Functionality
 function calculateTotals() {
     const rows = document.querySelectorAll(".resizable-table tbody tr");
@@ -2388,7 +2270,7 @@ window.onload = () => {
 // Show/Hide Login Popup
 
 const closeLoginPopup = document.getElementById('close-login-popup');
-
+const loginPopupOverlay = document.getElementById("login-popup-overlay");
 
 // Show popup function
 function showLoginPopup() {
@@ -2409,6 +2291,8 @@ loginPopupOverlay.addEventListener('click', (e) => {
     closeLoginPopupFunction();
   }
 });
+
+
 
 
        // Calculate Totals Functionality
@@ -2518,7 +2402,7 @@ function calculateTotals() {
     const signinButton = document.getElementById("signin-btn");
     const signupButton = document.getElementById("signup-btn");
     const signoutButton = document.getElementById("signout-btn");
-    const loginPopupOverlay = document.getElementById("login-popup-overlay");
+    
 
     const closeLoginPopupButton = document.getElementById("close-login-popup");
     const saveToFirestoreButton = document.getElementById("save-table-2-button");
@@ -2838,59 +2722,66 @@ const agentPopup = document.getElementById("agent-popup");
 
 // Add event listeners to agent buttons
 // Call enableAutosave on agent selection
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    console.log("User is logged in:", user.email);
 
 
-    // Get the last saved agent from the agent selector
-    const agentSelector = document.getElementById("agent-selector");
-    const lastSavedAgent = agentSelector.textContent.trim();
-
-
-    if (lastSavedAgent && lastSavedAgent !== "Select Agent") {
-      console.log("Auto-loading last saved agent:", lastSavedAgent);
-
-
-      // Load the table for the auto-loaded agent
-      await loadAutosavedTable(lastSavedAgent);
-    } else {
-      console.log("No agent selected or saved to auto-load.");
-    }
-  } else {
-    console.log("No user is logged in.");
-  }
+// Show the agent selection popup
+agentSelector.addEventListener("click", () => {
+    agentPopup.style.display = "block";
 });
+
+
+// Close the agent popup when clicking the "Close" button
+closePopupButton.addEventListener("click", () => {
+    agentPopup.style.display = "none";
+});
+
+
+// Handle Agent Selection and Load Correct Data
 agentButtons.forEach((button) => {
-  button.addEventListener("click", async () => {
-    const selectedAgent = button.getAttribute("data-agent");
-    document.getElementById("agent-selector").textContent = selectedAgent;
+    button.addEventListener("click", async () => {
+        const selectedAgent = button.getAttribute("data-agent");
+        const previousAgent = agentSelector.textContent.trim();
 
 
-    console.log("Selected agent:", selectedAgent);
+        // Prevent selecting the same agent again
+        if (selectedAgent === previousAgent) {
+            agentPopup.style.display = "none";
+            return;
+        }
 
 
-    // Check if the selected agent has a saved table
-    const user = auth.currentUser;
-    if (!user) {
-      console.error("No user logged in.");
-      return;
-    }
+        // Confirmation before switching (prevents accidental overwrites)
+        if (previousAgent !== "Select Agent") {
+            const confirmSwitch = confirm(
+                `Switching agents will clear unsaved changes. Continue?`
+            );
+            if (!confirmSwitch) return;
+        }
 
 
-    const agentTableDoc = doc(db, `users/${user.uid}/tables`, selectedAgent);
-    const agentTableSnap = await getDoc(agentTableDoc);
+        // Update UI with selected agent
+        agentSelector.textContent = selectedAgent;
+        agentPopup.style.display = "none";
 
 
-      console.log(`No saved table for agent: ${selectedAgent}. Showing blank table.`);
-      clearTable(); // Clear the table for a new start
-
-
-    // Close the agent selection popup
-    agentPopup.style.display = "none"; 
-  });
+        // Load the table for the selected agent
+        await loadTableFromFirestore(selectedAgent);
+    });
 });
 
+
+// Load the correct table when the page loads
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        console.log("User is logged in:", user.email);
+        
+        const lastSavedAgent = agentSelector.textContent.trim();
+        if (lastSavedAgent && lastSavedAgent !== "Select Agent") {
+            console.log("Auto-loading last saved agent:", lastSavedAgent);
+            await loadTableFromFirestore(lastSavedAgent);
+        }
+    }
+});
 
 
 
@@ -2975,60 +2866,80 @@ document.getElementById("enable-autosave-button").addEventListener("click", () =
 
 
 // Enable Autosave: Attach event listeners to track changes in the table
+let autosaveEnabled = false;
+let autosaveTimeout;
+
+
+// Enable Autosave
 function enableAutosave() {
   const table = document.querySelector(".resizable-table");
 
 
-  // Monitor changes in table cells, rows, columns, and total row
-  table.addEventListener("input", handleAutosave); // Cell content changes
-  table.addEventListener("DOMNodeInserted", handleAutosave); // Row/column added
-  table.addEventListener("DOMNodeRemoved", handleAutosave); // Row/column removed
-
-
-  // Monitor changes in the total row inputs
-  document.getElementById("total-debit").addEventListener("input", handleAutosave);
-  document.getElementById("total-credit").addEventListener("input", handleAutosave);
-  document.getElementById("total-balance").addEventListener("input", handleAutosave);
+  // Track changes with delay
+  table.addEventListener("input", handleAutosaveDebounced); // Typing changes
+  table.addEventListener("focusout", handleAutosaveNow); // When exiting a cell
+  
+  // Monitor changes in total row inputs
+  document.getElementById("total-debit").addEventListener("input", handleAutosaveDebounced);
+  document.getElementById("total-credit").addEventListener("input", handleAutosaveDebounced);
+  document.getElementById("total-balance").addEventListener("input", handleAutosaveDebounced);
 }
 
 
-// Disable Autosave: Remove event listeners
+// Disable Autosave
 function disableAutosave() {
   const table = document.querySelector(".resizable-table");
 
 
-  // Remove listeners for table changes
-  table.removeEventListener("input", handleAutosave);
-  table.removeEventListener("DOMNodeInserted", handleAutosave);
-  table.removeEventListener("DOMNodeRemoved", handleAutosave);
+  table.removeEventListener("input", handleAutosaveDebounced);
+  table.removeEventListener("focusout", handleAutosaveNow);
 
 
-  // Remove listeners for total row changes
-  document.getElementById("total-debit").removeEventListener("input", handleAutosave);
-  document.getElementById("total-credit").removeEventListener("input", handleAutosave);
-  document.getElementById("total-balance").removeEventListener("input", handleAutosave);
+  document.getElementById("total-debit").removeEventListener("input", handleAutosaveDebounced);
+  document.getElementById("total-credit").removeEventListener("input", handleAutosaveDebounced);
+  document.getElementById("total-balance").removeEventListener("input", handleAutosaveDebounced);
 }
 
 
-// Autosave Handler: Save table to Firestore when changes are detected
-async function handleAutosave() {
-  if (autosaveEnabled) {
-    document.getElementById("enable-autosave-button").textContent = "Saving...";
+// Debounced Autosave - Waits before saving
+function handleAutosaveDebounced() {
+  if (!autosaveEnabled) return;
+  
+  clearTimeout(autosaveTimeout);
+  autosaveTimeout = setTimeout(() => {
+    handleAutosaveNow();
+  }, 500); // Delay save by 500ms after typing stops
+}
 
 
-    try {
-      const saveButton = document.getElementById("save-table-2-button");
-      saveButton.click(); // Trigger your existing save logic
-    } catch (error) {
-      console.error("Autosave failed:", error);
-    } finally {
-      document.getElementById("enable-autosave-button").textContent = "Disable Autosave";
-    }
+// Immediate Save on Cell Exit
+function handleAutosaveNow() {
+  if (!autosaveEnabled) return;
+
+
+  document.getElementById("enable-autosave-button").textContent = "Saving...";
+  
+  try {
+    document.getElementById("save-table-2-button").click(); // Save table
+  } catch (error) {
+    console.error("Autosave failed:", error);
+  } finally {
+    document.getElementById("enable-autosave-button").textContent = "Disable Autosave";
   }
 }
 
-// Enable Autosave Logic with Resize and Calculate Support
-let autosaveEnabled = false;
+
+// Enable Autosave Button Handler
+document.getElementById("enable-autosave-button").addEventListener("click", () => {
+  autosaveEnabled = !autosaveEnabled;
+  document.getElementById("enable-autosave-button").textContent = autosaveEnabled ? "Disable Autosave" : "Enable Autosave";
+  if (autosaveEnabled) {
+    enableAutosave();
+  } else {
+    disableAutosave();
+  }
+});
+
 
 
 // Enable Autosave Button
@@ -3241,7 +3152,6 @@ async function clearTable() {
 
         if (tableDoc.exists()) {
             console.log(`Table exists for agent: ${agentName}. Not clearing.`);
-            //showToast(`A table already exists for agent: ${agentName}. The table will not be cleared.`);
             return; // Exit if a table is saved
         }
 
@@ -3259,40 +3169,42 @@ async function clearTable() {
 
         // Add default headers
         const headerRow = document.createElement("tr");
-        ["", "مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"].forEach((headerText) => {
+        const headers = ["", "مدين", "دائن", "نقل", "التاريخ", "البيان", "الرصيد"];
+
+
+        headers.forEach((headerText) => {
             const th = document.createElement("th");
             th.textContent = headerText;
             headerRow.appendChild(th);
         });
+
+
         tableHead.appendChild(headerRow);
 
 
         // Add default rows
         for (let i = 0; i < 10; i++) {
             const row = document.createElement("tr");
-            for (let j = 0; j < 7; j++) { // Match column count
+
+
+            headers.forEach((_, columnIndex) => {
                 const cell = document.createElement("td");
-                if (j === 0) {
-                    // Fill first column with row numbers
-                   // For example: 1, 2, 3, etc.
-                } else {
-                    cell.textContent = ""; // Other cells remain empty
+                cell.textContent = ""; // Other cells remain empty
+                cell.contentEditable = true;
+
+
+                // ✅ Ensure double-click for the 5th column (date selection)
+                if (columnIndex === 4) { // 5th column index (0-based)
+                    cell.addEventListener("dblclick", handleDateCellClick);
                 }
-                cell.contentEditable = true; // Make cells editable
+
+
                 row.appendChild(cell);
-            }
+            });
+
+
             tableBody.appendChild(row);
         }
-
-
-        // Set a consistent column width to avoid the first column being smaller
-        const columns = table.querySelectorAll("th, td");
-        const firstColumnWidth = columns[1].offsetWidth; // Get the width of the second column
-        columns.forEach((column, index) => {
-            if (index % 6 === 0) { // Only target first column (every 6th element)
-                column.style.width = `${firstColumnWidth}px`; // Match the width to the second column
-            }
-        });
 
 
         // Reset total values
@@ -3308,6 +3220,32 @@ async function clearTable() {
     }
 }
 
+
+function applyDatePopupToCells() {
+    document.querySelectorAll("td:nth-child(5)").forEach((cell) => {
+        cell.removeEventListener("dblclick", handleDateCellClick); // Prevent duplicates
+        cell.addEventListener("dblclick", handleDateCellClick);
+    });
+}
+
+
+function handleDateCellClick(event) {
+    const cell = event.target;
+    console.log("Date cell double-clicked!");
+
+
+    activeCell = cell;  // Store the clicked cell
+    const currentDate = activeCell.textContent.trim();
+    console.log("Current Date in Cell:", currentDate);
+
+
+    const [day, month] = currentDate.split('/');
+    document.getElementById("select-day").value = day || "01";
+    document.getElementById("select-month").value = month || "01";
+
+
+    document.getElementById("date-popup").style.display = "flex";
+}
 
     
     // Load Table from Firestore
@@ -3337,7 +3275,6 @@ async function clearTable() {
       const { headers, rows, totalRow } = tableDoc.data();
 
 
-      // Log the retrieved data for debugging
       console.log("Retrieved Headers:", headers);
       console.log("Retrieved Rows:", rows);
       console.log("Retrieved Total Row:", totalRow);
@@ -3359,8 +3296,8 @@ async function clearTable() {
 
 
         const newHeaderCell = document.createElement("th");
-        newHeaderCell.textContent = header.name || ""; // Set header text
-        newHeaderCell.style.width = header.width || "auto"; // Apply saved width
+        newHeaderCell.textContent = header.name || "";
+        newHeaderCell.style.width = header.width || "auto";
         headerRow.appendChild(newHeaderCell);
       });
       tableHead.appendChild(headerRow);
@@ -3375,13 +3312,21 @@ async function clearTable() {
       // Recreate rows
       rows.forEach((rowData) => {
         const newRow = document.createElement("tr");
-        headers.forEach((header) => {
+        headers.forEach((header, index) => {
           const cellData = rowData[header.name] || { content: "", fontSize: "", fontStyle: "", width: "" };
           const newCell = document.createElement("td");
-          newCell.textContent = cellData.content || ""; // Set cell text
+          newCell.textContent = cellData.content || "";
           newCell.style.fontSize = cellData.fontSize || "";
           newCell.style.fontStyle = cellData.fontStyle || "";
-          newCell.style.width = cellData.width || "auto"; // Apply saved width
+          newCell.style.width = cellData.width || "auto";
+
+
+          // ✅ Ensure double-click for 5th column (date selection)
+          if (index === 4) { // Column index starts from 0, so 5th column is index 4
+            newCell.addEventListener("dblclick", handleDateCellClick);
+          }
+
+
           newRow.appendChild(newCell);
         });
         tableBody.appendChild(newRow);
@@ -3394,10 +3339,9 @@ async function clearTable() {
       document.getElementById("total-balance").value = totalRow?.totalBalance || "0.00";
 
 
-      //showToast("Table loaded successfully!");
     } else {
       console.log(`No saved table for agent: ${agentName}. Showing default table.`);
-      clearTable(); // Reset to default table if no save exists
+      clearTable();
     }
 
 
@@ -3406,24 +3350,18 @@ async function clearTable() {
 
 
     // Reapply editing functionality to table cells
-    enableCellEditing(); // Ensure cells remain editable
-
-
+    enableCellEditing();
+    
     // Reinitialize column resizing functionality
     reapplyColumnResizing();
+
+
   } catch (error) {
     console.error("Failed to load table:", error);
     showToast("Failed to load table: " + error.message);
   }
 }
 
-
-
-
-
-
-    
-    
     // Delete Table from Firestore
     async function deleteTableFromFirestore(docId) {
       const user = auth.currentUser;
