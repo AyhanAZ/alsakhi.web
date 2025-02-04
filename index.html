@@ -674,67 +674,98 @@ th {
            }
         }
 
-        .total-section {
-            width: 60%;
-            margin: 20px auto;
-            border: 2px solid #73a4ff;
-            border-radius: 10px;
-            text-align: center;
-            background-color: #f9f9f9;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
+       /* Executive Badge Container */
+.total-section {
+    width: 40%;
+    margin: 30px auto;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
 
-        .total-header {
-            font-size: 20px;
-            font-weight: bold;
-            background-color: #73a4ff;
-            color: white;
-            padding: 10px;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-        }
-        
-        @media print {
-    .total-header {
-        background-color: #73a4ff !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        color: white;
+/* Elegant Hover Effect */
+.total-section:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Decorative Gradient Bar */
+.total-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, #407bff, #73a4ff);
+}
+
+/* Header - Executive Style */
+.total-header {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+    width: 100%;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Structured Input Section */
+.total-body {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 20px 0;
+}
+
+/* Wider & Sleek Input Fields */
+.total-column input {
+    background: rgba(240, 243, 255, 0.85);
+    width: 180px;  /* Increased width */
+    padding: 12px; /* Balanced padding */
+    text-align: center;
+    border: 1px solid #bbb;
+    border-radius: 10px;
+    font-size: 16px; /* Slightly smaller font */
+    font-weight: 500;
+    color: #2c3e50;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Input Focus Effect */
+.total-column input:focus {
+    border-color: #407bff;
+    box-shadow: 0 0 10px rgba(64, 123, 255, 0.4);
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .total-section {
+        width: 80%;
+        padding: 20px;
+    }
+    .total-body {
+        gap: 10px;
+    }
+    .total-column input {
+        width: 160px; /* Adjusted for mobile */
+        font-size: 15px;
     }
 }
 
-        .total-body {
-            display: flex;
-            justify-content: space-around;
-            padding: 20px;
-        }
 
-        .total-column input {
-            background-color: #f1f1f1;
-            width: 90%;
-            padding: 10px;
-            margin-top: 2%;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        
-        #resizing-tool {
-    background-color: #f9f9f9;
-    border: 2px solid #73a4ff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    text-align: center;
-}
-
-#resizing-tool h3 {
-    color: #73a4ff;
-    margin-bottom: 20px;
-}
 
 .slider-container {
     margin-bottom: 15px;
@@ -1225,6 +1256,7 @@ th {
     </style>
 </head>
 <body>
+  
   <div class="position-fixed top-0 start-0 p-3" style="z-index: 1050;">
     <div id="customToast" class="toast hide bg-primary text-white" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
@@ -1269,10 +1301,6 @@ th {
     <div class="center-container">
         <div class="editable-oval" id="agent-selector">Select Agent</div>
     </div>
-
-    <!-- New Save Table to Firestore Button -->
-
-
 
 <!-- New Load From Firestore Button -->
 <button id="load-from-firestore-button" class="floating-button" title="Saved Files">
@@ -1370,6 +1398,22 @@ th {
       <button id="cancel-date">Cancel</button>
   </div>
 </div>
+
+<div id="autosave-indicator" style="
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #27ae60;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+">
+    Saving...
+</div>
+
 
 
     <!-- Popup -->
@@ -2373,6 +2417,7 @@ function calculateTotals() {
       getFirestore,
       doc,
       setDoc,
+      writeBatch,
       getDocs,
       deleteDoc,
       collection,
@@ -2787,6 +2832,9 @@ onAuthStateChanged(auth, async (user) => {
 
     
 // Save Table to Firestore with Column Widths
+let lastSavedData = {}; // Stores the last saved version for change detection
+
+
 saveToFirestoreButton.addEventListener("click", async () => {
   const user = auth.currentUser;
   if (!user) {
@@ -2798,7 +2846,7 @@ saveToFirestoreButton.addEventListener("click", async () => {
   const table = document.querySelector(".resizable-table");
   const headers = Array.from(table.querySelectorAll("thead th")).map((th) => ({
     name: th.textContent,
-    width: th.style.width || "auto", // Save the current width of each column
+    width: th.style.width || "auto",
   }));
 
 
@@ -2807,7 +2855,7 @@ saveToFirestoreButton.addEventListener("click", async () => {
     const rowData = {};
     Array.from(row.cells).forEach((cell, index) => {
       rowData[headers[index].name || `Column${index + 1}`] = {
-        content: cell.textContent,
+        content: cell.textContent.trim(),
         fontSize: cell.style.fontSize || "",
         fontStyle: cell.style.fontStyle || "",
         width: cell.style.width || "",
@@ -2831,36 +2879,36 @@ saveToFirestoreButton.addEventListener("click", async () => {
   const totalBalance = document.getElementById("total-balance").value || "0.00";
 
 
+  // Construct new table data
+  const newTableData = {
+    agentName,
+    headers,
+    rows,
+    totalRow: { totalDebit, totalCredit, totalBalance },
+    timestamp: new Date().toISOString(),
+  };
+
+
+  // Check if data has changed (Prevent unnecessary writes)
+  const newDataString = JSON.stringify(newTableData);
+  if (lastSavedData[agentName] === newDataString) {
+    console.log("No changes detected. Skipping save.");
+    return;
+  }
+
+
   try {
-    // Save the table data, including total row values and column widths
-    await setDoc(doc(db, `users/${user.uid}/tables`, agentName), {
-      agentName,
-      headers, // Save headers with widths
-      rows,
-      totalRow: { totalDebit, totalCredit, totalBalance },
-      timestamp: new Date().toISOString(),
-    });
-   showToast(`Table for agent "${agentName}" saved successfully!`);
+    // Use batch write to optimize database operations
+    const batch = writeBatch(db);
+    const tableRef = doc(db, `users/${user.uid}/tables`, agentName);
+    batch.set(tableRef, newTableData);
+
+
+    await batch.commit();
+    lastSavedData[agentName] = newDataString; // Update last saved state
+    showToast(`Table for "${agentName}" saved successfully!`);
   } catch (error) {
     showToast("Failed to save table: " + error.message);
-  }
-});
-
-
-// Handle the "Enable Autosave" button click
-document.getElementById("enable-autosave-button").addEventListener("click", () => {
-  autosaveEnabled = !autosaveEnabled; // Toggle autosave state
-
-
-  const button = document.getElementById("enable-autosave-button");
-  if (autosaveEnabled) {
-    button.textContent = "Disable Autosave";
-    enableAutosave(); // Start tracking changes for autosave
-    showToast("Autosave enabled! Changes will be saved automatically.");
-  } else {
-    button.textContent = "Enable Autosave";
-    disableAutosave(); // Stop tracking changes
-    showToast("Autosave disabled.");
   }
 });
 
@@ -2868,6 +2916,7 @@ document.getElementById("enable-autosave-button").addEventListener("click", () =
 // Enable Autosave: Attach event listeners to track changes in the table
 let autosaveEnabled = false;
 let autosaveTimeout;
+let isSaving = false; // Prevents duplicate saves
 
 
 // Enable Autosave
@@ -2875,14 +2924,21 @@ function enableAutosave() {
   const table = document.querySelector(".resizable-table");
 
 
-  // Track changes with delay
-  table.addEventListener("input", handleAutosaveDebounced); // Typing changes
-  table.addEventListener("focusout", handleAutosaveNow); // When exiting a cell
-  
+  // Track changes only when the user finishes editing
+  table.addEventListener("focusout", handleAutosaveDebounced);
+  table.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Prevents newline
+      handleAutosaveNow();
+      event.target.blur(); // Exits cell after saving
+    }
+  });
+
+
   // Monitor changes in total row inputs
-  document.getElementById("total-debit").addEventListener("input", handleAutosaveDebounced);
-  document.getElementById("total-credit").addEventListener("input", handleAutosaveDebounced);
-  document.getElementById("total-balance").addEventListener("input", handleAutosaveDebounced);
+  document.getElementById("total-debit").addEventListener("focusout", handleAutosaveDebounced);
+  document.getElementById("total-credit").addEventListener("focusout", handleAutosaveDebounced);
+  document.getElementById("total-balance").addEventListener("focusout", handleAutosaveDebounced);
 }
 
 
@@ -2891,41 +2947,60 @@ function disableAutosave() {
   const table = document.querySelector(".resizable-table");
 
 
-  table.removeEventListener("input", handleAutosaveDebounced);
-  table.removeEventListener("focusout", handleAutosaveNow);
+  table.removeEventListener("focusout", handleAutosaveDebounced);
+  table.removeEventListener("keydown", handleAutosaveNow);
 
 
-  document.getElementById("total-debit").removeEventListener("input", handleAutosaveDebounced);
-  document.getElementById("total-credit").removeEventListener("input", handleAutosaveDebounced);
-  document.getElementById("total-balance").removeEventListener("input", handleAutosaveDebounced);
+  document.getElementById("total-debit").removeEventListener("focusout", handleAutosaveDebounced);
+  document.getElementById("total-credit").removeEventListener("focusout", handleAutosaveDebounced);
+  document.getElementById("total-balance").removeEventListener("focusout", handleAutosaveDebounced);
 }
 
 
 // Debounced Autosave - Waits before saving
-function handleAutosaveDebounced() {
-  if (!autosaveEnabled) return;
-  
+function handleAutosaveDebounced(event) {
+  if (!autosaveEnabled || event.target.tagName !== "TD") return;
+
+
   clearTimeout(autosaveTimeout);
-  autosaveTimeout = setTimeout(() => {
-    handleAutosaveNow();
-  }, 500); // Delay save by 500ms after typing stops
+  autosaveTimeout = setTimeout(handleAutosaveNow, 500); // Delayed save
 }
 
 
-// Immediate Save on Cell Exit
+// Immediate Save on Cell Exit or Enter Key
 function handleAutosaveNow() {
-  if (!autosaveEnabled) return;
+  if (!autosaveEnabled || isSaving) return;
 
 
-  document.getElementById("enable-autosave-button").textContent = "Saving...";
-  
+  isSaving = true;
+  showAutosaveIndicator(); // Show "Saving..." message
+
+
   try {
-    document.getElementById("save-table-2-button").click(); // Save table
+    document.getElementById("save-table-2-button").click(); // Trigger save
+    console.log("Autosaved Table!"); // Debugging log
   } catch (error) {
     console.error("Autosave failed:", error);
   } finally {
-    document.getElementById("enable-autosave-button").textContent = "Disable Autosave";
+    setTimeout(() => {
+      hideAutosaveIndicator();
+      isSaving = false;
+    }, 1500); // Simulated save delay
   }
+}
+
+
+// Show Autosave Indicator
+function showAutosaveIndicator() {
+  const indicator = document.getElementById("autosave-indicator");
+  indicator.style.display = "block";
+}
+
+
+// Hide Autosave Indicator
+function hideAutosaveIndicator() {
+  const indicator = document.getElementById("autosave-indicator");
+  indicator.style.display = "none";
 }
 
 
@@ -2933,13 +3008,14 @@ function handleAutosaveNow() {
 document.getElementById("enable-autosave-button").addEventListener("click", () => {
   autosaveEnabled = !autosaveEnabled;
   document.getElementById("enable-autosave-button").textContent = autosaveEnabled ? "Disable Autosave" : "Enable Autosave";
+
+
   if (autosaveEnabled) {
     enableAutosave();
   } else {
     disableAutosave();
   }
 });
-
 
 
 // Enable Autosave Button
@@ -3250,117 +3326,111 @@ function handleDateCellClick(event) {
     
     // Load Table from Firestore
   // Load Table from Firestore with Column Widths
+  let localTableCache = {}; // Stores recently loaded tables to reduce Firestore reads
+
   async function loadTableFromFirestore(agentName) {
-  const user = auth.currentUser;
-  if (!user) {
-    showToast("Sign in to load tables.");
-    return;
-  }
-
-
-  try {
-    const tableDoc = await getDoc(doc(db, `users/${user.uid}/tables`, agentName));
-    const table = document.querySelector(".resizable-table");
-    const tableBody = table.querySelector("tbody");
-    const tableHead = table.querySelector("thead");
-
-
-    // Clear existing table content
-    tableBody.innerHTML = "";
-    tableHead.innerHTML = "";
-
-
-    if (tableDoc.exists()) {
-      console.log(`Loading table for agent: ${agentName}`);
-      const { headers, rows, totalRow } = tableDoc.data();
-
-
-      console.log("Retrieved Headers:", headers);
-      console.log("Retrieved Rows:", rows);
-      console.log("Retrieved Total Row:", totalRow);
-
-
-      // Validate headers
-      if (!Array.isArray(headers)) {
-        throw new Error(`Invalid headers data: Expected an array, got ${typeof headers}`);
-      }
-
-
-      // Recreate headers
-      const headerRow = document.createElement("tr");
-      headers.forEach((header) => {
-        if (typeof header.name !== "string") {
-          console.warn("Invalid header entry:", header);
-          header.name = ""; // Fallback for invalid header
-        }
-
-
-        const newHeaderCell = document.createElement("th");
-        newHeaderCell.textContent = header.name || "";
-        newHeaderCell.style.width = header.width || "auto";
-        headerRow.appendChild(newHeaderCell);
-      });
-      tableHead.appendChild(headerRow);
-
-
-      // Validate rows
-      if (!Array.isArray(rows)) {
-        throw new Error(`Invalid rows data: Expected an array, got ${typeof rows}`);
-      }
-
-
-      // Recreate rows
-      rows.forEach((rowData) => {
-        const newRow = document.createElement("tr");
-        headers.forEach((header, index) => {
-          const cellData = rowData[header.name] || { content: "", fontSize: "", fontStyle: "", width: "" };
-          const newCell = document.createElement("td");
-          newCell.textContent = cellData.content || "";
-          newCell.style.fontSize = cellData.fontSize || "";
-          newCell.style.fontStyle = cellData.fontStyle || "";
-          newCell.style.width = cellData.width || "auto";
-
-
-          // ✅ Ensure double-click for 5th column (date selection)
-          if (index === 4) { // Column index starts from 0, so 5th column is index 4
-            newCell.addEventListener("dblclick", handleDateCellClick);
-          }
-
-
-          newRow.appendChild(newCell);
-        });
-        tableBody.appendChild(newRow);
-      });
-
-
-      // Apply total row values to the UI
-      document.getElementById("total-debit").value = totalRow?.totalDebit || "0.00";
-      document.getElementById("total-credit").value = totalRow?.totalCredit || "0.00";
-      document.getElementById("total-balance").value = totalRow?.totalBalance || "0.00";
-
-
-    } else {
-      console.log(`No saved table for agent: ${agentName}. Showing default table.`);
-      clearTable();
+    const user = auth.currentUser;
+    if (!user) {
+        showToast("Sign in to load tables.");
+        return;
     }
 
 
-    // Update agent name in the oval
-    document.getElementById("agent-selector").textContent = agentName || "Select Agent";
+    try {
+        const tableRef = doc(db, `users/${user.uid}/tables`, agentName);
+        const tableSnapshot = await getDoc(tableRef);
 
 
-    // Reapply editing functionality to table cells
-    enableCellEditing();
-    
-    // Reinitialize column resizing functionality
-    reapplyColumnResizing();
+        const table = document.querySelector(".resizable-table");
+        const tableBody = table.querySelector("tbody");
+        const tableHead = table.querySelector("thead");
 
 
-  } catch (error) {
-    console.error("Failed to load table:", error);
-    showToast("Failed to load table: " + error.message);
-  }
+        // ✅ Clear table before loading
+        tableBody.innerHTML = "";
+        tableHead.innerHTML = "";
+
+
+        if (tableSnapshot.exists()) {
+            const { headers, rows, totalRow, agentName: savedAgentName } = tableSnapshot.data();
+
+
+            console.log("🔥 Loading Table Data:", { headers, rows, totalRow, savedAgentName });
+
+
+            // ✅ Restore headers
+            const headerRow = document.createElement("tr");
+            headers.forEach((header) => {
+                const newHeaderCell = document.createElement("th");
+                newHeaderCell.textContent = header.name || "";
+                newHeaderCell.style.width = header.width || "auto";
+                headerRow.appendChild(newHeaderCell);
+            });
+            tableHead.appendChild(headerRow);
+
+
+            // ✅ Restore rows, including added ones
+            rows.forEach((rowData) => {
+                const newRow = document.createElement("tr");
+
+
+                headers.forEach((header, index) => {
+                    const cellData = rowData[header.name] || { content: "", fontSize: "", fontStyle: "", width: "" };
+                    const newCell = document.createElement("td");
+
+
+                    newCell.textContent = cellData.content || "";
+                    newCell.style.fontSize = cellData.fontSize || "";
+                    newCell.style.fontStyle = cellData.fontStyle || "";
+                    newCell.style.width = cellData.width || "auto";
+                    newCell.contentEditable = true; // ✅ Make sure cells are still editable
+
+
+                    // ✅ Ensure double-click for 5th column (date selection)
+                    if (index === 4) {
+                        newCell.addEventListener("dblclick", handleDateCellClick);
+                    }
+
+
+                    newRow.appendChild(newCell);
+                });
+
+
+                tableBody.appendChild(newRow);
+            });
+
+
+            // ✅ Restore totals
+            document.getElementById("total-debit").value = totalRow?.totalDebit || "0.00";
+            document.getElementById("total-credit").value = totalRow?.totalCredit || "0.00";
+            document.getElementById("total-balance").value = totalRow?.totalBalance || "0.00";
+
+
+            // ✅ FIX: Update the agent name in the UI
+            document.getElementById("agent-selector").textContent = savedAgentName || agentName;
+
+
+            showToast("✅ Table loaded successfully!");
+
+
+        } else {
+            console.log(`⚠️ No saved table for agent: ${agentName}. Creating a new empty table.`);
+            clearTable();
+        }
+
+
+        // ✅ Ensure new rows can be edited after load
+        enableCellEditing();
+        reapplyColumnResizing();
+
+
+    } catch (error) {
+        console.error("🔥 Load Error:", error);
+        showToast("❌ Failed to load table: " + error.message);
+    }
 }
+
+
 
     // Delete Table from Firestore
     async function deleteTableFromFirestore(docId) {
