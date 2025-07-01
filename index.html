@@ -599,41 +599,45 @@ label {
             width: 95%;
         }
 
-        .resizable-table {
-            width: 95%;
-            table-layout: fixed;
-            border-collapse: collapse;
-            border: 1px solid #000;
-            margin: 20px auto;
-            table-layout: fixed;
-        }
+ .resizable-table {
+  width: 95%;
+  border-collapse: collapse;
+  margin: 20px auto;
+  table-layout: auto;
+}
 
-        
-
-        th, td {
-    text-align: right; /* Alignment */
-    border: 1px solid #6d6d6d;
-    word-wrap: break-word;
-    font-family: Arial, Helvetica, sans-serif;
-    white-space: normal;
-    overflow: hidden;
-    padding: 2px 4px; 
-    min-height: 20px; 
-    height: 20px; 
-    font-size: 13px;
-    line-height: 1.1;
+th, td {
+  text-align: right;
+  border: 1px solid #6d6d6d;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 2px 4px;
+  font-size: 13px;
+  line-height: 1.1;
+  white-space: nowrap;           /* 👈 prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 th {
-    text-align: center; 
-    border: 1px solid #6d6d6d;
-    padding: 4px 6px;
-    font-size: 14px; 
-    line-height: 1.4;
-    background-color: #73a4ff; 
-    color: white; 
+  text-align: center;
+  padding: 4px 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  background-color: #73a4ff;
+  color: white;
 }
 
+.resizable-table th {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 👇 These give priority to wide-content columns */
+.resizable-table td:nth-child(5), /* بيان column */
+.resizable-table th:nth-child(5) {
+  max-width: 300px;
+  white-space: normal;
+}
 
         tr:nth-child(even) {
             background-color: #dadada;
@@ -1094,11 +1098,6 @@ th {
     border-bottom: 2px solid #73a4ff;
 }
 
-.resizable-table th {
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-}
 
 
 #close-popup:hover {
